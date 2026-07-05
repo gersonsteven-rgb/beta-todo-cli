@@ -1,0 +1,10 @@
+{
+  "name": "beta-todo-cli",
+  "version": "1.0.0",
+  "description": "Una pequeña lista de tareas (todo list) por línea de comandos",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  }
+}
