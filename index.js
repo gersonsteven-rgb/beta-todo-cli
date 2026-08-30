@@ -33,7 +33,7 @@ function listTasks() {
 function completeTask(index) {
   const tasks = loadTasks();
   const i = index - 1;
-  if (i < 0 || i >= tasks.length) {
+  if (!Number.isInteger(index) || i < 0 || i >= tasks.length) {
     console.log("Número de tarea inválido.");
     return;
   }
