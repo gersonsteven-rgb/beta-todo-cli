@@ -1,0 +1,8 @@
+# Config local de Claude Code — contiene rutas de esta maquina y credenciales
+.claude/settings.local.json
+
+# Skill editor-tiktok: ~1.9 MB de fuentes y MP3s, instalacion local
+.claude/skills/
+
+# Instalacion local del CLI de Claude Code — ~489 MB, dos claude.exe de 244 MB
+claude-cli/
