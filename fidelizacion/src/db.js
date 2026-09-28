@@ -72,13 +72,24 @@ CREATE TABLE IF NOT EXISTS transactions (
 CREATE INDEX IF NOT EXISTS idx_tx_customer ON transactions (customer_id, created_at);
 CREATE INDEX IF NOT EXISTS idx_tx_created  ON transactions (created_at);
 
+-- Campañas/promociones. Se guarda a quién le llegó (solo clientes que aceptaron promociones).
 CREATE TABLE IF NOT EXISTS promotions (
   id         INTEGER PRIMARY KEY,
   title      TEXT NOT NULL,
   message    TEXT NOT NULL,
+  segment    TEXT NOT NULL DEFAULT 'all',
+  recipients INTEGER NOT NULL DEFAULT 0,
+  active     INTEGER NOT NULL DEFAULT 1,
   user_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
+
+CREATE TABLE IF NOT EXISTS promotion_recipients (
+  promotion_id INTEGER NOT NULL REFERENCES promotions(id) ON DELETE CASCADE,
+  customer_id  INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  PRIMARY KEY (promotion_id, customer_id)
+);
+CREATE INDEX IF NOT EXISTS idx_recipients_customer ON promotion_recipients (customer_id);
 
 -- Dispositivos Apple que instalaron un pase (para enviarles actualizaciones por APNs).
 CREATE TABLE IF NOT EXISTS apple_registrations (
@@ -89,6 +100,15 @@ CREATE TABLE IF NOT EXISTS apple_registrations (
   PRIMARY KEY (device_id, serial)
 );
 `);
+
+// Migraciones simples: columnas agregadas después de la primera versión.
+function addColumn(table, column, definition) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!cols.some((c) => c.name === column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
+addColumn("promotions", "segment", "TEXT NOT NULL DEFAULT 'all'");
+addColumn("promotions", "recipients", "INTEGER NOT NULL DEFAULT 0");
+addColumn("promotions", "active", "INTEGER NOT NULL DEFAULT 1");
 
 export function tx(fn) {
   db.exec("BEGIN IMMEDIATE");

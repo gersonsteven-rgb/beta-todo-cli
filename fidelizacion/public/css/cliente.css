@@ -297,3 +297,52 @@ dialog p { color: var(--muted); font-size: 15px; white-space: pre-line; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- Portada, sellos y niveles ---------- */
+.hero.has-cover { padding-top: calc(32.8% - 24px); }
+.hero.has-cover::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  aspect-ratio: 1125 / 369;
+  background: linear-gradient(180deg, transparent 45%, var(--brand)), var(--cover) center / cover no-repeat;
+}
+.hero > * { position: relative; }
+.pass-cover {
+  width: calc(100% + 36px);
+  max-width: none;
+  margin: 16px -18px 0;
+  aspect-ratio: 1125 / 369;
+  object-fit: cover;
+  position: relative;
+}
+.stamps {
+  --cols: 5;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  gap: 10px;
+  margin-top: 18px;
+  position: relative;
+}
+.stamp {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 14px;
+  border: 2px dashed rgb(255 255 255 / 0.45);
+  color: rgb(255 255 255 / 0.65);
+  max-width: 56px;
+  width: 100%;
+  justify-self: center;
+}
+.stamp.gift { border-style: solid; border-color: var(--accent); font-size: 18px; }
+.stamp.on { background: var(--accent); border: 0; color: #1d1a17; font-size: 20px; }
+.stamp.fresh { animation: stamp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1.4); }
+@keyframes stamp { from { transform: scale(2.2) rotate(-20deg); opacity: 0; } }
+.tier-next { margin: -4px 0 12px; color: var(--muted); font-size: 14px; }
+.tier-next b { color: var(--text); }
+.vendor { display: inline-block; margin-top: 8px; font-size: 12px; opacity: 0.8; }

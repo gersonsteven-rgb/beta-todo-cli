@@ -1,15 +1,37 @@
 # Fidelización con Wallet: demo y base para pilotos
 
-Programa de lealtad por **puntos** con tarjeta en **Apple Wallet**, **Google Wallet** o **tarjeta web**.
+Demo del servicio de [Fidelización de HoraCeroIA](https://horaceroia.com/servicios/fidelizacion/): la tarjeta de cliente frecuente,
+pero dentro del celular. Funciona con **puntos o sellos** en **Apple Wallet**, **Google Wallet** o **tarjeta web**.
 El flujo completo:
 
-1. El cliente escanea un **QR en caja** y llena nombre, correo y teléfono.
+1. El cliente escanea un **QR en caja** (o toca un enlace que le mandan por **WhatsApp**) y llena nombre, correo y teléfono. No instala ninguna app ni crea una cuenta.
 2. Recibe su **tarjeta digital**, que puede guardar en Apple Wallet o Google Wallet. Si no hay wallets configuradas, usa la tarjeta web instalable.
 3. En cada compra, el cajero **escanea el QR de la tarjeta** desde el panel y digita el monto.
-4. Los **puntos se suman solos**. La tarjeta del cliente se actualiza en vivo y el panel registra la venta.
+4. Los **puntos o sellos se suman solos**. La tarjeta del cliente se actualiza en vivo y el panel registra la venta.
 5. Al llegar a cierto puntaje, el cliente **canjea un producto gratis**.
+6. El negocio envía **campañas** que le llegan al cliente como aviso en el teléfono. Con el plan Plata, además, a un segmento: nuevos, frecuentes, inactivos o VIP.
 
-El preset inicial es **Fusion Truck (Alajuela, Costa Rica)**, pero todo es configurable desde el panel: marca, colores, logo, reglas, premios, moneda y país. Así se reutiliza con cualquier negocio.
+El preset inicial es **Fusion Truck (Alajuela, Costa Rica)**, pero todo es configurable desde el panel: plan, marca, colores, logo, foto de portada, tipo de tarjeta, reglas, niveles, premios, moneda y país. Así se reutiliza con cualquier negocio.
+
+## Planes (como en horaceroia.com)
+
+El plan se elige en **Ajustes → Plan contratado**. En el demo se puede cambiar en vivo para mostrar qué agrega cada uno.
+
+| Función | Base | Plata |
+|---|:-:|:-:|
+| Tarjeta con tu marca en Apple Wallet y Google Wallet (o tarjeta web) | ✅ | ✅ |
+| Código QR único por cliente y formulario de registro | ✅ | ✅ |
+| Puntos o sellos, y premios que se canjean en el mostrador | ✅ | ✅ |
+| Panel con clientes, tarjetas emitidas y premios canjeados | ✅ | ✅ |
+| Acceso para cajeros (escanean, suman y canjean) | ✅ | ✅ |
+| Base de clientes con historial y exportación CSV | ✅ | ✅ |
+| Campañas a todos los clientes | ✅ | ✅ |
+| **Niveles** (ej. Clásico, Oro +10 %, VIP +20 % de puntos por compra) | — | ✅ |
+| **Segmentación**: nuevos, frecuentes, inactivos y VIP | — | ✅ |
+| **Campañas por segmento** (aviso en el teléfono) | — | ✅ |
+| **Panel avanzado**: segmentos, cada cuánto vuelven y clientes por nivel | — | ✅ |
+
+La matriz está en `src/settings.js` (`PLANS`). Si cambian los planes comerciales, se ajusta ahí.
 
 ---
 
@@ -20,7 +42,7 @@ Requisitos: **Node.js 22.13 o superior** (se recomienda Node 24 LTS). No necesit
 ```bash
 cd fidelizacion
 npm install
-npm run reset     # crea la base con ~40 clientes y compras de ejemplo (opcional)
+npm run reset     # crea la base con 64 clientes y 4 meses de compras de ejemplo (opcional)
 npm start
 ```
 
@@ -34,21 +56,24 @@ Al arrancar, la terminal muestra las URLs de la red local y un **QR** para regis
 | `npm start` | Levanta el servidor |
 | `npm run dev` | Igual, pero se reinicia al editar código |
 | `npm run seed` | Agrega datos de ejemplo si la base está vacía |
-| `npm run reset` | Borra la base y la vuelve a crear con datos de ejemplo |
+| `npm run reset` | Borra la base y la vuelve a crear con datos de ejemplo (tarjeta de **puntos**) |
+| `npm run reset -- --sellos` | Igual, pero con tarjeta de **sellos** (5 sellos = refresco, 10 = papas Fusion) |
+
+Los datos de ejemplo simulan 4 meses de operación: 64 clientes entre fans, frecuentes, ocasionales y perdidos, así que la segmentación y los niveles tienen de todo.
 
 ---
 
 ## Guion sugerido para el demo con el cliente
 
-1. **Panel** (laptop): mostrá los indicadores, la gráfica de ventas y la actividad en vivo con los datos de ejemplo.
-2. **QR de registro**: abrilo en pantalla o impreso. Que el cliente lo escanee con **su propio celular**.
-3. Llena sus datos y en 30 segundos tiene su tarjeta con **5 puntos de regalo**.
+1. **Panel** (laptop): mostrá las tarjetas emitidas, las ventas, la actividad en vivo y los **segmentos**. Tocá "Inactivos": "estos 20 clientes no vienen hace un mes".
+2. **QR de registro**: abrilo en pantalla o impreso. Que el cliente lo escanee con **su propio celular**, o mandale el enlace con **Compartir por WhatsApp**.
+3. Llena sus datos y en 30 segundos tiene su tarjeta con **5 puntos de regalo**. Pedile que marque **"Quiero recibir promociones"**: las campañas solo llegan a quien acepta.
 4. **Caja**: activá la cámara de la laptop y escaneá el QR de su celular. Registrá una compra de ₡8 500.
-   → En su celular aparece **"+8 pts"** al instante, sin recargar.
+   → En su celular aparece **"+8 puntos"** al instante, sin recargar.
 5. Canjeá un premio y mostrá cómo baja el saldo y queda en el historial.
-6. **Promos**: enviá "¡Doble puntos este viernes!" y aparece en su tarjeta al momento.
-   Con wallets configuradas, llega como notificación.
-7. **Ajustes**: cambiá colores, logo o nombre en vivo para mostrar que se adapta a cualquier negocio.
+6. Buscá un cliente **VIP** en Clientes y registrale una compra: suma **+20 %** por su nivel.
+7. **Campañas**: enviá "¡Te extrañamos!" a **Inactivos** o "Doble puntos el viernes" a **Todos**. Aparece en su tarjeta al momento; con wallets configuradas, llega como aviso.
+8. **Ajustes**: cambiá colores, logo o foto de portada en vivo. Pasá de **Plata a Base** para mostrar la diferencia entre planes. Para un café o barbería, mostrá la tarjeta de **sellos** (`npm run reset -- --sellos`).
 
 ---
 
@@ -115,19 +140,21 @@ flowchart LR
 | Compra | El cajero escanea (cámara, lector USB o digitado) y se llama a `GET /api/admin/lookup`. Luego `POST /customers/:id/earn` calcula los puntos con la regla, suma la visita y dispara SSE a la tarjeta y al panel, además de la actualización de las wallets. |
 | Canje | `POST /customers/:id/redeem` verifica el saldo y resta los puntos del premio. |
 | Error de caja | El dueño puede **anular** una compra o canje. Se crea el movimiento inverso y el original queda tachado. |
-| Promoción | `POST /promotions` la guarda como promoción vigente, la muestra en todas las tarjetas web abiertas, hace push a Apple y envía un mensaje con notificación a Google. |
+| Campaña | `POST /promotions` con un segmento (`all`, `new`, `frequent`, `inactive`, `vip`). Se calculan los destinatarios (segmento ∩ aceptaron promociones), se guardan en `promotion_recipients` y la campaña aparece al instante en sus tarjetas web. También se hace push a sus iPhones y se envía un mensaje con aviso a su Google Wallet. `DELETE /promotions/:id` la retira. |
+| Nivel | En cada compra se calcula el nivel por lo acumulado en la historia del cliente (`lifetime_points`). El bono del nivel se suma a los puntos, y si sube de nivel se le avisa ("Subiste a nivel Oro"). |
 | Actualización Apple | Push vacío por APNs, luego el iPhone consulta `/wallet/apple/v1/devices/...` y descarga el pase nuevo. Si cambiaron los puntos, aparece la notificación "Puntos disponibles: 25". |
 
 ### Modelo de datos (`src/db.js`)
 
 | Tabla | Contenido |
 |---|---|
-| `settings` | Configuración del negocio en JSON: marca, reglas, moneda, contacto, ubicación, promo vigente |
+| `settings` | Configuración del negocio en JSON: plan, marca, tipo de tarjeta, reglas, niveles, segmentos, moneda, contacto y ubicación |
 | `users` | Usuarios del panel (`owner` = dueño, `staff` = cajero), con contraseñas en scrypt |
 | `customers` | Cliente y tarjeta: datos, `code` (QR), `serial` (URL y wallets), saldo, visitas, total comprado y consentimiento |
 | `rewards` | Catálogo de premios (nombre, puntos, activo) |
 | `transactions` | Libro mayor: `welcome`, `earn`, `redeem`, `adjust`, `void` |
-| `promotions` | Historial de promociones enviadas |
+| `promotions` | Campañas enviadas (segmento, cantidad de destinatarios, activa o retirada) |
+| `promotion_recipients` | A qué clientes les llegó cada campaña (cada tarjeta muestra su última campaña activa) |
 | `apple_registrations` | iPhones que instalaron cada pase, con su token de push |
 
 ### API
@@ -145,7 +172,20 @@ Pública (celular del cliente):
 | `GET /wallet/google/:serial` | Redirección a "Guardar en Google Wallet" |
 | `/wallet/apple/v1/...` | Web service de Apple Wallet (registro de dispositivos y pases actualizados) |
 
-Panel (`/api/admin`, requiere sesión): `login`, `logout`, `me`, `stream`, `stats`, `lookup`, `customers` (listar, crear, ver, `earn`, `redeem`, `adjust`, borrar), `transactions/:id/void`, `rewards`, `promotions`, `settings` (y `settings/logo`), `registration-qr`, `users` y `export/customers.csv`.
+Panel (`/api/admin`, requiere sesión): `login`, `logout`, `me`, `stream`, `stats`, `lookup`, `customers` (listar con `?segment=`, crear, ver, `earn`, `redeem`, `adjust`, borrar), `transactions/:id/void`, `rewards`, `promotions` (campañas), `settings` (y `settings/logo`, `settings/cover`), `registration-qr`, `users` y `export/customers.csv`.
+
+### Segmentos (plan Plata)
+
+Se calculan al vuelo desde el historial. Las reglas se ajustan en Ajustes → Segmentos.
+
+| Segmento | Regla por defecto |
+|---|---|
+| Nuevos | Se registraron en los últimos 30 días |
+| Frecuentes | 3 o más compras en los últimos 30 días |
+| Inactivos | Sin compras hace más de 30 días |
+| VIP | Están en el nivel más alto |
+
+Un cliente puede estar en varios a la vez (por ejemplo, nuevo y frecuente).
 
 ---
 
@@ -190,7 +230,8 @@ El estado de cada integración, con lo que falta, se ve en el panel → **Ajuste
 
 ## Adaptarlo a otro negocio
 
-- **Desde el panel (Ajustes):** nombre, programa, eslogan, colores, logo, regla de puntos (por monto o por visita tipo sellos), bono de bienvenida, moneda, prefijo telefónico, contacto, ubicación y términos.
+- **Desde el panel (Ajustes):** plan, nombre, programa, eslogan, colores, logo, **foto de portada**, tipo de tarjeta (**puntos** por monto o por visita, o **sellos** con compra mínima opcional), regalo de bienvenida, niveles, reglas de segmentos, moneda, prefijo telefónico, contacto, ubicación y términos.
+- **Foto de portada:** el panel la recorta sola a 1125×369. Sale en la tarjeta web, como franja del pase de Apple Wallet y como imagen principal en Google Wallet.
 - **Premios:** panel → Premios.
 - **Valores por defecto de una instalación nueva:** `src/settings.js` (`DEFAULT_SETTINGS`) y `src/bootstrap.js` (`DEFAULT_REWARDS`).
 - **Varios clientes en la misma máquina:** una carpeta, un `.env`, un `PORT` y un `DATA_DIR` por negocio (por ejemplo `DATA_DIR=data-fusiontruck`, `PORT=3001`).
@@ -217,6 +258,7 @@ El estado de cada integración, con lo que falta, se ve en el panel → **Ajuste
 
 - Consentimiento explícito al registrarse, con fecha guardada. Las promociones son opcionales (opt-in).
 - El dueño puede **eliminar** a un cliente y su historial (derecho de supresión) y **exportar** la base en CSV.
+- Las **campañas solo llegan a quienes aceptaron recibir promociones** al registrarse. La casilla no viene marcada por defecto.
 - Contraseñas con scrypt; sesión en cookie firmada, `HttpOnly` y `SameSite=Lax`; límite de intentos en el login y en el registro.
 - Roles: el **cajero** solo registra compras, canjes y clientes. El **dueño** además ajusta puntos, anula movimientos, edita premios y ajustes, y envía promociones.
 - El web service de Apple valida el `authenticationToken` único de cada pase.
@@ -239,12 +281,14 @@ fidelizacion/
 │   ├── server.js            # arranque, rutas, errores y banner con QR
 │   ├── config.js            # variables de entorno
 │   ├── db.js                # esquema SQLite
-│   ├── settings.js          # configuración del negocio y reglas de puntos
+│   ├── settings.js          # configuración del negocio, planes, puntos/sellos y niveles
 │   ├── bootstrap.js         # usuario dueño y premios iniciales
 │   ├── lib/                 # auth (sesión), códigos, eventos SSE
 │   ├── services/
-│   │   ├── loyalty.js       # registrar, sumar, canjear, ajustar, anular
-│   │   └── cards.js         # estado de la tarjeta compartido por web y wallets
+│   │   ├── loyalty.js       # registrar, sumar, canjear, ajustar, anular (con bono por nivel)
+│   │   ├── cards.js         # estado de la tarjeta compartido por web y wallets
+│   │   ├── segments.js      # nuevos, frecuentes, inactivos, VIP
+│   │   └── campaigns.js     # campañas por segmento
 │   ├── wallet/              # apple.js, apns.js, google.js, index.js (fachada)
 │   └── routes/              # public.js, admin.js, wallet.js
 ├── public/
@@ -255,9 +299,17 @@ fidelizacion/
 └── .env.example
 ```
 
+## Marca del proveedor
+
+El panel, la tarjeta y el registro muestran de forma discreta "Fidelización digital por HoraCeroIA". Se cambia con `VENDOR_NAME` / `VENDOR_URL` en `.env`; si `VENDOR_NAME` queda vacío, se oculta.
+
 ## Limitaciones conocidas del demo
 
 - Los botones "Agregar a Apple Wallet / Google Wallet" son genéricos. En producción conviene usar los **badges oficiales** de Apple y Google, por sus guías de marca.
 - Google no avisa cuando el cliente guarda o borra el pase, a menos que se configuren sus callbacks. Por eso el panel marca "Google" cuando el cliente tocó el botón.
 - El límite de intentos es en memoria, suficiente para una instancia por negocio.
 - El logo y los datos de Fusion Truck son de ejemplo y deben reemplazarse por los oficiales del negocio.
+- Google Wallet limita los avisos a unos 3 por tarjeta cada 24 horas. Apple no fija un límite, pero conviene no saturar.
+- En la tarjeta de sellos del pase de Apple, los sellos se muestran como texto (●●●○○). Para dibujarlos sobre la foto habría que generar la imagen de franja por cliente.
+
+Apple Wallet y Google Wallet son marcas de Apple Inc. y de Google LLC. HoraCeroIA no está afiliada a ellas ni las representa.

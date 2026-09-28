@@ -5,8 +5,8 @@ import path from "node:path";
 import { PKPass } from "passkit-generator";
 import { ROOT, config } from "../config.js";
 import { db } from "../db.js";
-import { getSettings, ruleText } from "../settings.js";
-import { cardState, baseUrl } from "../services/cards.js";
+import { getSettings, ruleText, shortQty, units } from "../settings.js";
+import { cardState, baseUrl, stampText } from "../services/cards.js";
 import { passImages } from "./images.js";
 import { pushPassUpdates } from "./apns.js";
 
@@ -52,12 +52,15 @@ function rgb(hex) {
 export function passJson(customer) {
   const s = getSettings();
   const state = cardState(customer);
+  const u = units(s);
   const url = baseUrl();
   const available = state.rewards.filter((r) => r.unlocked);
+  const stamps = s.cardType === "stamps";
 
   const backFields = [];
-  if (s.promo) {
-    backFields.push({ key: "promo", label: s.promo.title.toUpperCase(), value: s.promo.message, changeMessage: "%@" });
+  if (state.promo) {
+    // changeMessage: al llegar una campaña nueva, el iPhone la muestra como notificación.
+    backFields.push({ key: "promo", label: state.promo.title.toUpperCase(), value: state.promo.message, changeMessage: "%@" });
   }
   backFields.push(
     {
@@ -68,9 +71,19 @@ export function passJson(customer) {
     {
       key: "catalog",
       label: "CATÁLOGO DE PREMIOS",
-      value: state.rewards.map((r) => `${r.cost} pts — ${r.name}`).join("\n") || "Próximamente",
+      value: state.rewards.map((r) => `${shortQty(r.cost, s)} — ${r.name}`).join("\n") || "Próximamente",
     },
-    { key: "how", label: "¿CÓMO FUNCIONA?", value: `${ruleText(s)}. Mostrá este código en caja en cada compra.` },
+    { key: "how", label: "¿CÓMO FUNCIONA?", value: `${ruleText(s)}. Mostrá este código en caja en cada compra.` }
+  );
+  if (state.tier) {
+    const tiers = [...s.tiers].sort((a, b) => a.min - b.min);
+    backFields.push({
+      key: "tiers",
+      label: "NIVELES",
+      value: tiers.map((t) => `${t.name}: desde ${shortQty(t.min, s)}${t.bonus ? ` (+${t.bonus}% en cada compra)` : ""}`).join("\n"),
+    });
+  }
+  backFields.push(
     { key: "web", label: "TU TARJETA WEB", value: `${url}/tarjeta/${customer.serial}` },
     { key: "code", label: "CÓDIGO DE CLIENTE", value: customer.code }
   );
@@ -78,6 +91,22 @@ export function passJson(customer) {
     backFields.push({ key: "contact", label: s.businessName.toUpperCase(), value: [s.contact.address, s.contact.hours].filter(Boolean).join("\n") });
   }
   backFields.push({ key: "terms", label: "TÉRMINOS", value: s.termsText });
+
+  const secondaryFields = [
+    { key: "member", label: "MIEMBRO", value: state.name },
+    state.tier
+      ? { key: "tier", label: "NIVEL", value: state.tier.name, changeMessage: "¡Subiste a nivel %@!", textAlignment: "PKTextAlignmentRight" }
+      : { key: "visits", label: "VISITAS", value: state.visits, textAlignment: "PKTextAlignmentRight" },
+  ];
+  const auxiliaryFields = [
+    { key: "next", label: "PRÓXIMO PREMIO", value: state.next ? state.next.name : "¡Todos desbloqueados!" },
+    {
+      key: "missing",
+      label: state.next ? "TE FALTAN" : "DISPONIBLES",
+      value: state.next ? shortQty(state.next.missing, s) : String(available.length),
+      textAlignment: "PKTextAlignmentRight",
+    },
+  ];
 
   const json = {
     formatVersion: 1,
@@ -94,17 +123,22 @@ export function passJson(customer) {
     barcodes: [{ format: "PKBarcodeFormatQR", message: customer.code, messageEncoding: "iso-8859-1", altText: customer.code }],
     storeCard: {
       // El header es lo que se ve con las tarjetas apiladas en Wallet.
-      headerFields: [{ key: "points", label: "PUNTOS", value: state.points, changeMessage: "Puntos disponibles: %@" }],
-      primaryFields: [{ key: "member", label: "MIEMBRO", value: state.name }],
-      secondaryFields: [
-        { key: "next", label: "PRÓXIMO PREMIO", value: state.next ? state.next.name : "¡Todos desbloqueados!" },
+      headerFields: [
         {
-          key: "missing",
-          label: state.next ? "TE FALTAN" : "DISPONIBLES",
-          value: state.next ? `${state.next.missing} pts` : String(available.length),
-          textAlignment: "PKTextAlignmentRight",
+          key: "points",
+          label: u.label.toUpperCase(),
+          value: stamps ? `${state.stamps.filled}/${state.stamps.goal}` : state.points,
+          changeMessage: `${u.label}: %@`,
         },
       ],
+      // El campo principal va sobre la foto de portada (strip) si hay.
+      primaryFields: [
+        stamps
+          ? { key: "stamps", label: "TUS SELLOS", value: stampText(state.points) }
+          : { key: "balance", label: "PUNTOS DISPONIBLES", value: state.points },
+      ],
+      secondaryFields,
+      auxiliaryFields,
       backFields,
     },
   };
@@ -178,7 +212,18 @@ export async function notifyChanged(customer) {
   await push(tokens.map((t) => t.push_token));
 }
 
-// Cambió algo que afecta a todos los pases (marca, premios, promoción).
+// Avisar a un grupo de clientes (ej. destinatarios de una campaña).
+export async function notifyCustomers(customers) {
+  if (!customers.length) return;
+  const serials = new Set(customers.map((c) => c.serial));
+  const tokens = db
+    .prepare("SELECT serial, push_token FROM apple_registrations")
+    .all()
+    .filter((r) => serials.has(r.serial));
+  await push(tokens.map((t) => t.push_token));
+}
+
+// Cambió algo que afecta a todos los pases (marca, premios).
 export async function notifyAll() {
   db.prepare("UPDATE customers SET updated_at = ? WHERE serial IN (SELECT serial FROM apple_registrations)").run(Date.now());
   const tokens = db.prepare("SELECT push_token FROM apple_registrations").all();

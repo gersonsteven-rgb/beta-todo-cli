@@ -8,8 +8,13 @@ const program = await api("/api/public/program");
 applyBrand(program);
 document.title = `${program.programName} · ${program.businessName}`;
 
+const u = program.units;
+if (program.coverUrl) {
+  $("#hero").classList.add("has-cover");
+  $("#hero").style.setProperty("--cover", `url("${program.coverUrl}")`);
+}
 if (program.welcomeBonus > 0) {
-  $("#welcome-pts").textContent = `+${program.welcomeBonus} pts`;
+  $("#welcome-pts").textContent = `+${program.welcomeBonus} ${program.welcomeBonus === 1 ? u.one : u.short}`;
   $("#welcome-txt").textContent = "de regalo al registrarte";
 }
 const [rulePts, ...ruleRest] = program.rule.split(" por ");
@@ -18,11 +23,13 @@ $("#rule-txt").textContent = ruleRest.length ? `por ${ruleRest.join(" por ")}` :
 $("#prefix").textContent = program.phonePrefix;
 $("#rewards").innerHTML = program.rewards
   .slice(0, 6)
-  .map((r) => `<li><b>${r.cost} pts</b> · ${esc(r.name)}</li>`)
+  .map((r) => `<li><b>${r.cost} ${esc(u.short)}</b> · ${esc(r.name)}</li>`)
   .join("");
 $("#terms-text").textContent = program.termsText;
 const c = program.contact || {};
-$("#contact").innerHTML = [c.address, c.hours, c.instagram].filter(Boolean).map(esc).join("<br>");
+$("#contact").innerHTML =
+  [c.address, c.hours, c.instagram].filter(Boolean).map(esc).join("<br>") +
+  (program.vendor ? `<br><span class="vendor">Fidelización digital por <a href="${esc(program.vendor.url)}" target="_blank" rel="noopener">${esc(program.vendor.name)}</a></span>` : "");
 
 // Si este celular ya tiene tarjeta, ofrecer abrirla.
 const saved = remembered();

@@ -59,14 +59,39 @@ const initials = (name) =>
     .map((w) => w[0].toUpperCase())
     .join("");
 const isOwner = () => me?.user.role === "owner";
+const U = () => me.business.units;
+const qty = (n) => `${intFmt(n)} ${Math.abs(n) === 1 ? U().one : U().many}`;
+// Forma corta: "12 pts" o "1 sello" / "3 sellos".
+const short = (n) => (me.business.cardType === "stamps" ? qty(n) : `${intFmt(n)} ${U().short}`);
+const plan = () => me.plan;
+const stampsMode = () => me.business.cardType === "stamps";
 
-// Misma regla que el servidor, para mostrar la vista previa al digitar.
-function previewPoints(amount) {
-  const r = me.business.pointsRule;
-  if (r.mode === "visit") return r.perVisit;
-  const v = Number(amount) || 0;
-  return r.spend > 0 ? Math.floor((Math.round(v * minorFactor()) / minorFactor()) / r.spend) * r.points : 0;
+// Misma regla que el servidor (settings.purchasePoints), para la vista previa al digitar.
+function previewEarn(amount, tier) {
+  const b = me.business;
+  const minor = Math.round((Number(amount) || 0) * minorFactor());
+  if (b.cardType === "stamps") {
+    const min = (b.stampRule.minSpend || 0) * minorFactor();
+    return { base: minor >= min ? 1 : 0, bonus: 0, total: minor >= min ? 1 : 0 };
+  }
+  const r = b.pointsRule;
+  const base = r.mode === "visit" ? r.perVisit : r.spend > 0 ? Math.floor(minor / (r.spend * minorFactor())) * r.points : 0;
+  const bonus = tier?.bonus ? Math.floor((base * tier.bonus) / 100) : 0;
+  return { base, bonus, total: base + bonus };
 }
+
+const SEG_ICON = { new: "🆕", frequent: "🔁", inactive: "💤", vip: "👑" };
+function segPills(keys = [], tier = null) {
+  if (!me.segments) return "";
+  // El nivel más alto ya se muestra como "Nivel VIP": no repetir el segmento.
+  return keys
+    .filter((k) => !(k === "vip" && tier?.isTop))
+    .map((k) => `<span class="pill seg-${k}">${SEG_ICON[k]} ${esc(me.segments[k].label)}</span>`).join(" ");
+}
+function tierPill(tier) {
+  return tier ? `<span class="pill tier${tier.isTop ? " top" : ""}">Nivel ${esc(tier.name)}</span>` : "";
+}
+const waLink = (phone, text) => `https://wa.me/${String(phone || "").replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
 
 // ---------------- UI helpers ----------------
 function toast(msg, type = "") {
@@ -110,6 +135,11 @@ function applyBrand() {
   $$("[data-role]").forEach((e) => (e.textContent = me.user.role === "owner" ? "Dueño" : "Cajero"));
   $$("img[data-logo]").forEach((i) => (i.src = `/media/logo.png?v=${Date.now()}`));
   $$("[data-owner]").forEach((e) => (e.hidden = !isOwner()));
+  $$("[data-plan]").forEach((e) => (e.textContent = `Plan ${me.plan.name}`));
+  $$("[data-vendor]").forEach((e) => {
+    e.hidden = !me.vendor;
+    if (me.vendor) e.innerHTML = `Fidelización digital por <a href="${esc(me.vendor.url)}" target="_blank" rel="noopener">${esc(me.vendor.name)}</a>`;
+  });
   document.title = `Panel · ${b.programName}`;
 }
 
@@ -117,6 +147,14 @@ function applyBrand() {
 function showLogin() {
   stream?.close();
   stream = null;
+  fetch("/api/public/program")
+    .then((r) => r.json())
+    .then((p) => {
+      const v = $("#login [data-vendor]");
+      v.hidden = !p.vendor;
+      if (p.vendor) v.innerHTML = `Fidelización digital por <a href="${esc(p.vendor.url)}" target="_blank" rel="noopener">${esc(p.vendor.name)}</a>`;
+    })
+    .catch(() => {});
   $("#app").hidden = true;
   $("#login").hidden = false;
   $("#login-form [name=email]").focus();
@@ -175,13 +213,14 @@ async function route() {
   if (!me) return;
   cleanup?.();
   cleanup = null;
-  const [name, arg] = location.hash.replace(/^#\/?/, "").split("/");
+  const [path, query = ""] = location.hash.replace(/^#\/?/, "").split("?");
+  const [name, arg] = path.split("/");
   let key = views[name] ? name : isOwner() ? "panel" : "caja";
   if (key === "config" && !isOwner()) key = "caja";
   $$("#nav a").forEach((a) => a.classList.toggle("active", a.dataset.route === key));
   view.innerHTML = '<div class="loading">Cargando…</div>';
   try {
-    cleanup = (await views[key](view, arg)) || null;
+    cleanup = (await views[key](view, arg, new URLSearchParams(query))) || null;
   } catch (err) {
     view.innerHTML = `<div class="error-box">${esc(err.message)}</div>`;
   }
@@ -197,7 +236,7 @@ function onActivity(fn) {
 
 const activityIcon = { signup: "🆕", earn: "🛒", redeem: "🎁", adjust: "✏️", void: "↩️", welcome: "👋" };
 function feedItem(a, fresh = false) {
-  const pts = a.points ? `<span class="pts ${a.points > 0 ? "plus" : "minus"}">${a.points > 0 ? "+" : ""}${a.points}</span>` : "";
+  const pts = a.points ? `<span class="pts ${a.points > 0 ? "plus" : "minus"}">${a.points > 0 ? "+" : ""}${esc(short(a.points))}</span>` : "";
   return `<li class="${fresh ? "fresh" : ""}"><span class="dot" aria-hidden="true">${activityIcon[a.type] || "•"}</span>
     <span class="main"><b><a href="#/clientes/${a.customerId}">${esc(a.customerName)}</a></b><small class="${a.voided ? "voided" : ""}">${esc(a.text)} · ${ago(a.createdAt)}</small></span>${pts}</li>`;
 }
@@ -215,13 +254,14 @@ async function viewPanel(el) {
         <div class="actions"><a class="btn" href="#/qr">QR de registro</a><a class="btn primary" href="#/caja">Abrir caja</a></div>
       </div>
       <section class="kpis">
-        ${tile("Clientes registrados", intFmt(k.customers), `<b>+${intFmt(k.newThisWeek)}</b> esta semana`)}
+        ${tile("Tarjetas emitidas", intFmt(k.customers), `<b>+${intFmt(k.newThisWeek)}</b> esta semana · ${intFmt(k.appleWallets)} Apple · ${intFmt(k.googleWallets)} Google`)}
         ${tile("Ventas con tarjeta", money(k.salesTotal), `${intFmt(k.salesCount)} compras en ${s.days} días`)}
         ${tile("Ticket promedio", k.avgTicketText, "por compra registrada")}
         ${tile("Clientes que regresan", pct(k.repeatRate), "con 2 visitas o más")}
-        ${tile("Puntos entregados", intFmt(k.pointsIssued), `${intFmt(k.pointsRedeemed)} canjeados · ${intFmt(k.outstandingPoints)} en circulación`)}
+        ${tile(`${U().label} entregados`, intFmt(k.pointsIssued), `${intFmt(k.pointsRedeemed)} canjeados · ${intFmt(k.outstandingPoints)} en circulación`)}
         ${tile("Premios canjeados", intFmt(k.redemptions), `en ${s.days} días`)}
       </section>
+      ${advancedSection(s)}
       <section class="grid-2">
         <div class="card">
           <div class="card-head"><h2>Ventas por día</h2><span class="sub">compras registradas con tarjeta</span></div>
@@ -239,7 +279,7 @@ async function viewPanel(el) {
       </section>
       <section class="grid-2 even">
         <div class="card"><h2>Mejores clientes</h2>
-          <div class="table-wrap"><table class="t"><thead><tr><th>Cliente</th><th class="r">Visitas</th><th class="r">Puntos</th></tr></thead><tbody>
+          <div class="table-wrap"><table class="t"><thead><tr><th>Cliente</th><th class="r">Visitas</th><th class="r">${esc(U().label)}</th></tr></thead><tbody>
           ${s.top.map((c) => `<tr class="link" data-href="#/clientes/${c.id}"><td>${esc(c.name)}</td><td class="r">${c.visits}</td><td class="r">${c.points}</td></tr>`).join("") || '<tr><td colspan="3" class="muted">Sin datos aún.</td></tr>'}
           </tbody></table></div>
         </div>
@@ -271,6 +311,26 @@ async function viewPanel(el) {
     clearTimeout(t);
     removeEventListener("resize", onResize);
   };
+}
+
+// Plan Plata: segmentos, niveles y frecuencia. En Base se muestra qué agrega Plata.
+function advancedSection(s) {
+  const a = s.advanced;
+  if (!a) {
+    return `<section class="card upsell" style="margin-top:16px">
+      <div><span class="pill">Plan Plata</span><h2 style="margin:8px 0 4px">Segmentación, niveles y campañas dirigidas</h2>
+      <p class="muted" style="margin:0">Ve quién es nuevo, frecuente, inactivo o VIP; premia por nivel y envía campañas solo al grupo correcto.</p></div>
+      ${isOwner() ? '<a class="btn" href="#/config">Ver planes</a>' : ""}</section>`;
+  }
+  const seg = (k) => `<a class="tile seg-tile" href="#/clientes?seg=${k}"><div class="label">${SEG_ICON[k]} ${esc(a.segmentDefs[k].label)}</div>
+    <div class="value">${intFmt(a.segments[k])}</div><div class="delta">${esc(a.segmentDefs[k].hint)}</div></a>`;
+  const freq = a.avgDaysBetweenVisits == null ? "—" : a.avgDaysBetweenVisits < 1.5 ? "1 día" : `${Math.round(a.avgDaysBetweenVisits)} días`;
+  return `<div class="section-title"><h2>Segmentos</h2><span class="sub">Tocá un segmento para ver sus clientes o enviarles una campaña</span></div>
+    <section class="kpis">
+      ${seg("new")}${seg("frequent")}${seg("inactive")}${seg("vip")}
+      ${tile("Vuelven cada", freq, "promedio entre compras de un mismo cliente")}
+      ${tile("Niveles", a.tiers.map((t) => `<span class="tier-count"><b>${intFmt(t.n)}</b> ${esc(t.name)}</span>`).join(""), "clientes por nivel")}
+    </section>`;
 }
 
 function tile(label, value, delta = "") {
@@ -354,7 +414,7 @@ function drawColumns(container, series) {
 async function viewCaja(el) {
   el.innerHTML = `
     <div class="page-head">
-      <div><h1>Caja</h1><p class="sub">Escaneá la tarjeta del cliente para sumar puntos o canjear premios.</p></div>
+      <div><h1>Caja</h1><p class="sub">Escaneá la tarjeta del cliente para sumar ${esc(U().many)} o canjear premios.</p></div>
       <div class="actions"><button class="btn" id="new-customer">+ Cliente nuevo</button></div>
     </div>
     <div class="caja">
@@ -412,7 +472,7 @@ async function viewCaja(el) {
       const r = await api(`/lookup?q=${encodeURIComponent(q)}`);
       if (r.matches) {
         $("#matches", el).innerHTML = r.matches
-          .map((c) => `<li data-id="${c.id}"><span><b>${esc(c.fullName)}</b><br><small class="muted">${esc(phoneFmt(c.phone))} · ${esc(c.code)}</small></span><span class="pts">${c.points} pts</span></li>`)
+          .map((c) => `<li data-id="${c.id}"><span><b>${esc(c.fullName)}</b><br><small class="muted">${esc(phoneFmt(c.phone))} · ${esc(c.code)}</small></span><span class="pts">${esc(short(c.points))}</span></li>`)
           .join("");
         $$("#matches li", el).forEach((li) =>
           li.addEventListener("click", async () => {
@@ -542,8 +602,20 @@ function customerPanel(slot, detail, { compact = false } = {}) {
 
   const render = (bump = false) => {
     const c = state.customer;
-    const rule = me.business.pointsRule;
-    const visitMode = rule.mode === "visit";
+    const b = me.business;
+    const stamps = stampsMode();
+    // Sin monto obligatorio: puntos por visita o sellos sin compra mínima.
+    const amountOptional = stamps ? !(b.stampRule.minSpend > 0) : b.pointsRule.mode === "visit";
+    const earnLabel = stamps ? "Sumar sello" : b.pointsRule.mode === "visit" ? "Registrar visita" : `Sumar ${U().many}`;
+    const goal = Math.max(...(state.rewards || []).map((r) => r.cost), 0);
+    const stampRow =
+      stamps && goal && goal <= 20
+        ? `<div class="stamp-row" aria-label="${c.points} de ${goal} sellos">${Array.from({ length: goal }, (_, i) => {
+            const n = i + 1;
+            const gift = (state.rewards || []).some((r) => r.cost === n);
+            return `<span class="${n <= c.points ? "on" : ""} ${gift ? "gift" : ""}">${n <= c.points ? "✓" : gift ? "🎁" : n}</span>`;
+          }).join("")}</div>`
+        : "";
     slot.innerHTML = `
       <div class="card">
         <div class="cust-head">
@@ -552,17 +624,21 @@ function customerPanel(slot, detail, { compact = false } = {}) {
             <h2>${esc(c.fullName)}</h2>
             <p>${esc(c.code)} · ${esc(phoneFmt(c.phone))} · ${esc(c.email)}</p>
             <div class="badges">
+              ${tierPill(c.tier)} ${segPills(c.segments, c.tier)}
               ${c.appleInstalled ? '<span class="pill ok">Apple Wallet</span>' : ""}
               ${c.googleClicked ? '<span class="pill ok">Google Wallet</span>' : ""}
               <span class="pill">${c.visits} ${c.visits === 1 ? "visita" : "visitas"}</span>
               <span class="pill">Cliente desde ${date(c.createdAt)}</span>
             </div>
           </div>
-          <div class="balance"><span class="lbl">Puntos</span><b class="${bump ? "bump" : ""}">${intFmt(c.points)}</b></div>
+          <div class="balance"><span class="lbl">${esc(U().label)}</span><b class="${bump ? "bump" : ""}">${intFmt(c.points)}</b></div>
         </div>
+        ${stampRow}
         <div class="meter">
-          <div class="track"><div class="fill" style="width:${c.next ? Math.round(c.next.progress * 100) : 100}%"></div></div>
-          <p>${c.next ? `Le faltan <b>${c.next.missing}</b> pts para <b>${esc(c.next.name)}</b>` : "Tiene todos los premios desbloqueados"}</p>
+          ${stampRow ? "" : `<div class="track"><div class="fill" style="width:${c.next ? Math.round(c.next.progress * 100) : 100}%"></div></div>`}
+          <p>${c.next ? `Le faltan <b>${esc(qty(c.next.missing))}</b> para <b>${esc(c.next.name)}</b>` : "Tiene todos los premios desbloqueados"}${
+            c.tier?.next ? ` · ${esc(qty(c.tier.next.missing))} más para nivel <b>${esc(c.tier.next.name)}</b>` : ""
+          }</p>
         </div>
         ${
           lastResult
@@ -572,9 +648,9 @@ function customerPanel(slot, detail, { compact = false } = {}) {
         <div class="ops">
           <form class="op" id="earn">
             <h3>Registrar compra</h3>
-            <div class="money"><span>${esc(currencySymbol())}</span><input name="amount" inputmode="decimal" autocomplete="off" placeholder="0" ${visitMode ? "" : "required"} aria-label="Monto de la compra"></div>
-            <p class="preview" id="pv">${visitMode ? `Suma <b>${rule.perVisit}</b> ${rule.perVisit === 1 ? "punto" : "puntos"} por visita` : "= <b>0</b> puntos"}</p>
-            <button class="btn primary big">${visitMode ? "Registrar visita" : "Sumar puntos"}</button>
+            <div class="money"><span>${esc(currencySymbol())}</span><input name="amount" inputmode="decimal" autocomplete="off" placeholder="${amountOptional ? "Monto (opcional)" : "0"}" ${amountOptional ? "" : "required"} aria-label="Monto de la compra"></div>
+            <p class="preview" id="pv"></p>
+            <button class="btn primary big">${esc(earnLabel)}</button>
           </form>
           <div class="op">
             <h3>Canjear premio</h3>
@@ -582,7 +658,7 @@ function customerPanel(slot, detail, { compact = false } = {}) {
               (state.rewards || [])
                 .map((r) => {
                   const ok = c.points >= r.cost;
-                  return `<li><span class="main"><b>${esc(r.name)}</b><small>${r.cost} pts${ok ? "" : ` · faltan ${r.cost - c.points}`}</small></span>
+                  return `<li><span class="main"><b>${esc(r.name)}</b><small>${esc(short(r.cost))}${ok ? "" : ` · faltan ${r.cost - c.points}`}</small></span>
                     <button class="btn sm ${ok ? "primary" : ""}" data-redeem="${r.id}" data-name="${esc(r.name)}" data-cost="${r.cost}" ${ok ? "" : "disabled"}>Canjear</button></li>`;
                 })
                 .join("") || '<li class="muted">No hay premios activos.</li>'
@@ -603,11 +679,16 @@ function customerPanel(slot, detail, { compact = false } = {}) {
           <summary>Más opciones</summary>
           <div class="owner-tools">
             <div><p class="muted" style="margin:6px 0">Enlace de la tarjeta del cliente (para enviarlo por WhatsApp o correo):</p>
-              <div style="display:flex;gap:8px"><input class="input" readonly value="${esc(location.origin + c.cardUrl)}" id="card-link"><button class="btn" id="copy">Copiar</button></div>
-              <p style="margin:8px 0 0"><a href="${esc(c.cardUrl)}" target="_blank" rel="noopener">Abrir tarjeta ↗</a> · <a href="#/clientes/${c.id}">Ver ficha completa</a></p></div>
+              <div style="display:flex;gap:8px"><input class="input" readonly value="${esc(c.publicCardUrl)}" id="card-link"><button class="btn" id="copy">Copiar</button></div>
+              <p style="margin:8px 0 0;display:flex;gap:8px;flex-wrap:wrap">
+                <a class="btn sm primary" target="_blank" rel="noopener" href="${esc(
+                  waLink(c.phone, `¡Hola ${c.fullName.split(" ")[0]}! Esta es tu tarjeta de ${me.business.programName} (${me.business.businessName}). Guardala en tu celular: ${c.publicCardUrl}`)
+                )}">Enviar por WhatsApp</a>
+                <a class="btn sm" href="${esc(c.cardUrl)}" target="_blank" rel="noopener">Abrir tarjeta ↗</a>
+                <a class="btn sm ghost" href="#/clientes/${c.id}">Ver ficha completa</a></p></div>
             ${
               isOwner()
-                ? `<form id="adjust"><p class="muted" style="margin:6px 0">Ajuste manual de puntos</p>
+                ? `<form id="adjust"><p class="muted" style="margin:6px 0">Ajuste manual de ${esc(U().many)}</p>
                     <div style="display:flex;gap:8px"><input class="input" name="points" type="number" step="1" placeholder="+10 o -5" required style="max-width:110px"><input class="input" name="note" placeholder="Motivo" required></div>
                     <button class="btn" style="margin-top:8px">Aplicar ajuste</button></form>
                   <div><p class="muted" style="margin:6px 0">Eliminar al cliente y todo su historial (derecho de supresión).</p><button class="btn danger" id="del">Eliminar cliente</button></div>`
@@ -622,13 +703,25 @@ function customerPanel(slot, detail, { compact = false } = {}) {
   const bind = () => {
     const earnForm = $("#earn", slot);
     const amount = earnForm.amount;
-    if (me.business.pointsRule.mode !== "visit") {
-      amount.addEventListener("input", () => {
-        amount.value = amount.value.replace(/[^\d.,]/g, "");
-        const p = previewPoints(amount.value.replace(",", "."));
-        $("#pv", slot).innerHTML = `= <b>${p}</b> ${p === 1 ? "punto" : "puntos"}`;
-      });
-    }
+    const updatePreview = () => {
+      const b = me.business;
+      const p = previewEarn(amount.value.replace(",", "."), state.customer.tier);
+      let html;
+      if (stampsMode()) {
+        const min = b.stampRule.minSpend || 0;
+        html = p.total ? "Suma <b>1 sello</b>" : `Compra menor a ${money(min * minorFactor())}: no suma sello`;
+      } else {
+        html = `= <b>${esc(qty(p.total))}</b>`;
+        if (p.bonus) html += ` <span class="pill tier">incluye +${p.bonus} por nivel ${esc(state.customer.tier.name)}</span>`;
+        if (b.pointsRule.mode === "visit") html = `Suma <b>${esc(qty(p.total))}</b> por visita`;
+      }
+      $("#pv", slot).innerHTML = html;
+    };
+    amount.addEventListener("input", () => {
+      amount.value = amount.value.replace(/[^\d.,]/g, "");
+      updatePreview();
+    });
+    updatePreview();
     earnForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const btn = earnForm.querySelector("button");
@@ -638,15 +731,16 @@ function customerPanel(slot, detail, { compact = false } = {}) {
         const r = await api(`/customers/${state.customer.id}/earn`, { method: "POST", body: { amount: Number(value) } });
         const unlockedBefore = new Set(state.customer.available.map((a) => a.id));
         const newly = r.customer.available.filter((a) => !unlockedBefore.has(a.id));
+        const amountText = Number(value) ? `Compra de ${money(Math.round(Number(value) * minorFactor()))} registrada.` : "Compra registrada.";
         lastResult = {
-          big: `+${r.points} pts`,
-          html: `Compra de ${money(Math.round(Number(value) * minorFactor()))} registrada. Nuevo saldo: <b>${r.customer.points}</b> pts.${
-            newly.length ? ` 🎁 ¡Ya puede canjear <b>${esc(newly.map((n) => n.name).join(", "))}</b>!` : ""
-          }`,
+          big: `+${short(r.points)}`,
+          html: `${amountText} Nuevo saldo: <b>${esc(qty(r.customer.points))}</b>.${r.bonus ? ` Incluye +${r.bonus} por su nivel.` : ""}${
+            r.tierUp ? ` ⭐ ¡Subió a nivel <b>${esc(r.tierUp)}</b>!` : ""
+          }${newly.length ? ` 🎁 ¡Ya puede canjear <b>${esc(newly.map((n) => n.name).join(", "))}</b>!` : ""}`,
         };
         state = { ...state, ...r };
         render(true);
-        toast(`+${r.points} puntos para ${r.customer.fullName.split(" ")[0]}`);
+        toast(`+${qty(r.points)} para ${r.customer.fullName.split(" ")[0]}`);
       } catch (err) {
         toast(err.message, "error");
         btn.disabled = false;
@@ -656,11 +750,11 @@ function customerPanel(slot, detail, { compact = false } = {}) {
 
     $$("[data-redeem]", slot).forEach((b) =>
       b.addEventListener("click", async () => {
-        const ok = await confirmBox("Canjear premio", `¿Canjear "${b.dataset.name}" por ${b.dataset.cost} puntos?`, "Canjear");
+        const ok = await confirmBox("Canjear premio", `¿Canjear "${b.dataset.name}" por ${qty(Number(b.dataset.cost))}?`, "Canjear");
         if (!ok) return;
         try {
           const r = await api(`/customers/${state.customer.id}/redeem`, { method: "POST", body: { rewardId: Number(b.dataset.redeem) } });
-          lastResult = { big: `🎁 ${r.reward}`, html: `Canje registrado. Entregá el premio. Nuevo saldo: <b>${r.customer.points}</b> pts.` };
+          lastResult = { big: `🎁 ${r.reward}`, html: `Canje registrado. Entregá el premio. Nuevo saldo: <b>${esc(qty(r.customer.points))}</b>.` };
           state = { ...state, ...r };
           render(true);
           toast("Premio canjeado");
@@ -671,7 +765,7 @@ function customerPanel(slot, detail, { compact = false } = {}) {
     );
     $$("[data-void]", slot).forEach((b) =>
       b.addEventListener("click", async () => {
-        if (!(await confirmBox("Anular movimiento", "Se revierte el movimiento y sus puntos. Queda registro de la anulación.", "Anular", true))) return;
+        if (!(await confirmBox("Anular movimiento", "Se revierte el movimiento y su saldo. Queda registro de la anulación.", "Anular", true))) return;
         try {
           state = { ...state, ...(await api(`/transactions/${b.dataset.void}/void`, { method: "POST" })) };
           lastResult = null;
@@ -726,7 +820,7 @@ function currencySymbol() {
 // =====================================================================
 // CLIENTES
 // =====================================================================
-async function viewClientes(el, id) {
+async function viewClientes(el, id, query) {
   if (id) {
     const detail = await api(`/customers/${id}`);
     el.innerHTML = `<a class="back" href="#/clientes">← Clientes</a><div id="slot"></div>`;
@@ -736,38 +830,68 @@ async function viewClientes(el, id) {
   let search = "";
   let sort = "recent";
   let offset = 0;
+  let segment = me.segments && query?.get("seg") in me.segments ? query.get("seg") : "";
   el.innerHTML = `
     <div class="page-head">
       <div><h1>Clientes</h1><p class="sub" id="count"></p></div>
       <div class="actions">
         ${isOwner() ? '<a class="btn" href="/api/admin/export/customers.csv">Exportar CSV</a>' : ""}
+        <a class="btn" id="campaign" hidden>📣 Enviar campaña a este segmento</a>
         <button class="btn primary" id="add">+ Cliente nuevo</button>
       </div>
     </div>
     <div class="card">
+      <div class="chips" id="segs"></div>
       <div class="row" style="margin-bottom:14px">
         <input class="input" id="search" placeholder="Buscar por nombre, correo, teléfono o código" type="search">
         <select class="input" id="sort">
-          <option value="recent">Más recientes</option><option value="points">Más puntos</option>
+          <option value="recent">Más recientes</option><option value="points">Más ${esc(U().many)}</option>
           <option value="visits">Más visitas</option><option value="lastVisit">Última visita</option><option value="name">Nombre</option>
         </select>
       </div>
       <div class="table-wrap"><table class="t">
-        <thead><tr><th>Cliente</th><th>Código</th><th class="r">Puntos</th><th class="r">Visitas</th><th class="r">Total</th><th>Última visita</th><th>Wallet</th></tr></thead>
+        <thead><tr><th>Cliente</th><th>Código</th><th class="r">${esc(U().label)}</th><th class="r">Visitas</th><th class="r">Total</th><th>Última visita</th><th>${me.segments ? "Nivel y segmentos" : "Wallet"}</th></tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
       <div style="text-align:center;margin-top:14px"><button class="btn" id="more" hidden>Cargar más</button></div>
     </div>`;
 
+  const renderChips = (counts) => {
+    if (!me.segments || !counts) return;
+    $("#segs", el).innerHTML =
+      `<button class="chip ${segment ? "" : "on"}" data-seg="">Todos</button>` +
+      Object.entries(me.segments)
+        .map(([k, d]) => `<button class="chip ${segment === k ? "on" : ""}" data-seg="${k}" title="${esc(d.hint)}">${SEG_ICON[k]} ${esc(d.label)}<b>${counts[k]}</b></button>`)
+        .join("");
+    $$("[data-seg]", el).forEach((b) =>
+      b.addEventListener("click", () => {
+        segment = b.dataset.seg;
+        offset = 0;
+        history.replaceState(null, "", segment ? `#/clientes?seg=${segment}` : "#/clientes");
+        load();
+      })
+    );
+    const camp = $("#campaign", el);
+    camp.hidden = !segment || !isOwner();
+    camp.href = `#/promos?seg=${segment}`;
+  };
+
   const load = async (append = false) => {
-    const r = await api(`/customers?search=${encodeURIComponent(search)}&sort=${sort}&limit=50&offset=${offset}`);
+    const r = await api(`/customers?search=${encodeURIComponent(search)}&sort=${sort}&limit=50&offset=${offset}&segment=${segment}`);
+    renderChips(r.segmentCounts);
     const html = r.customers
       .map(
         (c) => `<tr class="link" data-id="${c.id}">
           <td><b>${esc(c.fullName)}</b><br><small class="muted">${esc(phoneFmt(c.phone))}</small></td>
           <td class="num">${esc(c.code)}</td><td class="r">${c.points}</td><td class="r">${c.visits}</td><td class="r">${esc(c.totalSpentText)}</td>
           <td>${c.lastVisitAt ? ago(c.lastVisitAt) : '<span class="muted">—</span>'}</td>
-          <td>${c.appleInstalled ? '<span class="pill ok">Apple</span> ' : ""}${c.googleClicked ? '<span class="pill ok">Google</span>' : ""}${!c.appleInstalled && !c.googleClicked ? '<span class="pill">Web</span>' : ""}</td>
+          <td>${
+            me.segments
+              ? `${tierPill(c.tier)} ${segPills(c.segments, c.tier)}`
+              : `${c.appleInstalled ? '<span class="pill ok">Apple</span> ' : ""}${c.googleClicked ? '<span class="pill ok">Google</span>' : ""}${
+                  !c.appleInstalled && !c.googleClicked ? '<span class="pill">Web</span>' : ""
+                }`
+          }</td>
         </tr>`
       )
       .join("");
@@ -775,7 +899,7 @@ async function viewClientes(el, id) {
     if (append) rows.insertAdjacentHTML("beforeend", html);
     else rows.innerHTML = html || '<tr><td colspan="7" class="muted">No hay clientes que coincidan.</td></tr>';
     $$("tr[data-id]", rows).forEach((tr) => (tr.onclick = () => (location.hash = `#/clientes/${tr.dataset.id}`)));
-    $("#count", el).textContent = `${intFmt(r.total)} ${r.total === 1 ? "cliente" : "clientes"}`;
+    $("#count", el).textContent = `${intFmt(r.total)} ${r.total === 1 ? "cliente" : "clientes"}${segment ? ` · ${me.segments[segment].hint.charAt(0).toLowerCase()}${me.segments[segment].hint.slice(1)}` : ""}`;
     $("#more", el).hidden = offset + r.customers.length >= r.total;
   };
   let t;
@@ -798,8 +922,12 @@ async function viewClientes(el, id) {
   });
   $("#add", el).addEventListener("click", () => newCustomerDialog((r) => (location.hash = `#/clientes/${r.customer.id}`)));
   await load();
-  const off = onActivity((a) => a.type === "signup" && !search && sort === "recent" && ((offset = 0), load()));
-  return off;
+  return onActivity((a) => {
+    if (a.type === "signup" && !search && sort === "recent") {
+      offset = 0;
+      load();
+    }
+  });
 }
 
 // =====================================================================
@@ -817,7 +945,7 @@ async function viewPremios(el) {
         rewards
           .map(
             (r) => `<div class="reward-card ${r.active ? "" : "off"}">
-              <div class="cost">${r.pointsCost} <small>puntos</small></div>
+              <div class="cost">${r.pointsCost} <small>${esc(U().many)}</small></div>
               <b>${esc(r.name)}</b>
               <p>${esc(r.description) || "&nbsp;"}</p>
               <div class="foot"><span class="pill ${r.active ? "ok" : ""}">${r.active ? "Activo" : "Pausado"} · ${r.redeemed} canjes</span>
@@ -837,7 +965,7 @@ function rewardDialog(r, done) {
     <form id="rf">
       <label class="field"><span>Nombre</span><input class="input" name="name" required maxlength="60" value="${esc(r?.name)}" placeholder="Ej. Papas clásicas gratis"></label>
       <label class="field"><span>Descripción (opcional)</span><input class="input" name="description" maxlength="160" value="${esc(r?.description)}"></label>
-      <label class="field"><span>Puntos necesarios</span><input class="input" name="pointsCost" type="number" min="1" step="1" required value="${r?.pointsCost ?? ""}"><small id="equiv"></small></label>
+      <label class="field"><span>${esc(U().label)} necesarios</span><input class="input" name="pointsCost" type="number" min="1" step="1" required value="${r?.pointsCost ?? ""}"><small id="equiv"></small></label>
       <label class="check"><input type="checkbox" name="active" ${!r || r.active ? "checked" : ""}> Activo (visible para los clientes)</label>
       <p class="error-box" id="rf-err" hidden></p>
       <div class="actions">${r ? '<button type="button" class="btn danger" id="rf-del" style="margin-right:auto">Eliminar</button>' : ""}
@@ -847,8 +975,13 @@ function rewardDialog(r, done) {
   const equiv = () => {
     const rule = me.business.pointsRule;
     const pts = Number(f.pointsCost.value) || 0;
-    $("#equiv", d).textContent =
-      pts && rule.mode === "amount" ? `≈ ${money(Math.ceil(pts / rule.points) * rule.spend * minorFactor())} en compras` : pts && rule.mode === "visit" ? `≈ ${Math.ceil(pts / rule.perVisit)} visitas` : "";
+    $("#equiv", d).textContent = !pts
+      ? ""
+      : stampsMode()
+        ? `= ${pts} compras`
+        : rule.mode === "amount"
+          ? `≈ ${money(Math.ceil(pts / rule.points) * rule.spend * minorFactor())} en compras`
+          : `≈ ${Math.ceil(pts / rule.perVisit)} visitas`;
   };
   f.pointsCost.addEventListener("input", equiv);
   equiv();
@@ -878,69 +1011,86 @@ function rewardDialog(r, done) {
 // =====================================================================
 // PROMOCIONES
 // =====================================================================
-async function viewPromos(el) {
+async function viewPromos(el, _arg, query) {
+  let chosen = query?.get("seg") || "all";
   const render = async () => {
     const p = await api("/promotions");
-    const w = p.audience;
+    const w = p.wallet;
+    if (!p.audiences.some((a) => a.key === chosen)) chosen = "all";
+    const segLabel = (k) => (k === "all" ? "Todos" : me.segments?.[k]?.label || k);
+    const active = p.campaigns.filter((c) => c.active);
     el.innerHTML = `
-      <div class="page-head"><div><h1>Promociones</h1><p class="sub">Llegan como notificación a las wallets y aparecen en la tarjeta web al instante.</p></div></div>
+      <div class="page-head"><div><h1>Campañas</h1><p class="sub">Llegan como aviso en el celular (wallets) y aparecen en la tarjeta web al instante.</p></div></div>
       <div class="grid-2">
         <div class="stack">
           ${
-            p.current
-              ? `<div class="card"><div class="card-head"><h2>Promoción activa</h2>${isOwner() ? '<button class="btn sm danger" id="clear">Quitar</button>' : ""}</div>
-                  <b>${esc(p.current.title)}</b><p class="muted" style="margin:4px 0 0">${esc(p.current.message)}</p></div>`
-              : ""
-          }
-          ${
             isOwner()
               ? `<form class="card" id="pf">
-                  <h2>Nueva promoción</h2>
-                  <label class="field"><span>Título</span><input class="input" name="title" maxlength="40" required placeholder="Ej. ¡Doble puntos este viernes!"></label>
-                  <label class="field"><span>Mensaje</span><textarea class="input" name="message" maxlength="240" required placeholder="Ej. Este viernes de 6 a 10 p. m. todas las compras suman el doble. ¡Te esperamos!"></textarea></label>
-                  <button class="btn primary big">Enviar a todos los clientes</button>
-                  <p class="hint">Apple Wallet: ${w.apple.enabled ? "activo — notificación en pantalla bloqueada" : "no configurado"} · Google Wallet: ${
-                    w.google.enabled ? "activo — hasta 3 notificaciones por día" : "no configurado"
-                  } · Tarjeta web: siempre.</p>
+                  <h2>Nueva campaña</h2>
+                  <p class="hint" style="margin:6px 0 12px">¿A quién? ${me.plan.targetedCampaigns ? "Elegí un segmento." : "En el plan Base las campañas van a todos; el plan Plata permite elegir segmentos."}</p>
+                  <div class="audiences">${p.audiences
+                    .map(
+                      (a) => `<label class="aud ${a.count ? "" : "disabled"}" title="${esc(a.hint)}"><input type="radio" name="segment" value="${a.key}" ${a.key === chosen ? "checked" : ""} ${a.count ? "" : "disabled"}>
+                        <b>${a.key === "all" ? "👥" : SEG_ICON[a.key]} ${esc(a.label)}</b><small>${esc(a.hint)}</small><div class="n">${intFmt(a.count)}</div><small>${a.withWallet} con wallet</small></label>`
+                    )
+                    .join("")}</div>
+                  <label class="field"><span>Título</span><input class="input" name="title" maxlength="40" required placeholder="Ej. ¡Te extrañamos!"></label>
+                  <label class="field"><span>Mensaje</span><textarea class="input" name="message" maxlength="240" required placeholder="Ej. Volvé esta semana y te regalamos un refresco con tu compra."></textarea></label>
+                  <button class="btn primary big" id="send">Enviar campaña</button>
+                  <p class="hint">Solo llega a quienes aceptaron recibir promociones (${intFmt(p.totals.optIn)} de ${intFmt(p.totals.customers)} clientes).
+                    Apple Wallet: ${w.apple.enabled ? "aviso en pantalla bloqueada" : "no configurado"} · Google Wallet: ${w.google.enabled ? "aviso (máx. 3 por día)" : "no configurado"} · Tarjeta web: siempre.</p>
                 </form>`
-              : '<div class="info-box">Solo el dueño puede enviar promociones.</div>'
+              : '<div class="info-box">Solo el dueño puede enviar campañas.</div>'
           }
           <div class="card"><h2>Historial</h2>
             <ul class="feed">${
-              p.history.map((h) => `<li><span class="dot">📣</span><span class="main"><b>${esc(h.title)}</b><small>${esc(h.message)} · ${dateTime(h.created_at)}</small></span></li>`).join("") ||
-              '<li class="muted">Todavía no se han enviado promociones.</li>'
+              p.campaigns
+                .map(
+                  (h) => `<li><span class="dot">📣</span><span class="main"><b>${esc(h.title)}</b>
+                    <small>${esc(h.message)}</small>
+                    <small>${esc(segLabel(h.segment))} · ${intFmt(h.recipients)} ${h.recipients === 1 ? "cliente" : "clientes"} · ${dateTime(h.createdAt)}</small></span>
+                    ${h.active ? `<span class="pill ok">Activa</span>${isOwner() ? ` <button class="btn sm ghost" data-end="${h.id}">Retirar</button>` : ""}` : '<span class="pill">Finalizada</span>'}</li>`
+                )
+                .join("") || '<li class="muted">Todavía no se han enviado campañas.</li>'
             }</ul>
           </div>
         </div>
         <div>
           <div class="lock" aria-label="Vista previa de la notificación">
-            <div class="time">${new Intl.DateTimeFormat(me.business.locale, { hour: "numeric", minute: "2-digit", hour12: false }).format(new Date())}</div>
-            <div class="notif"><img src="/media/logo.png" alt=""><div><b id="pv-t">${esc(p.current?.title || "Título de la promoción")}</b><p id="pv-m">${esc(p.current?.message || "Así verá tu cliente el mensaje en su celular.")}</p><small>${esc(me.business.programName)} · ahora</small></div></div>
+            <div class="time">${new Intl.DateTimeFormat(me.business.locale, { hour: "numeric", minute: "2-digit", hour12: false, timeZone: me.business.timezone }).format(new Date())}</div>
+            <div class="notif"><img src="/media/logo.png" alt=""><div><b id="pv-t">${esc(active[0]?.title || "Título de la campaña")}</b><p id="pv-m">${esc(active[0]?.message || "Así verá tu cliente el mensaje en su celular.")}</p><small>${esc(me.business.programName)} · ahora</small></div></div>
           </div>
-          <p class="hint">${w.optIn} clientes aceptaron recibir promociones. Las wallets muestran el mensaje a quien tenga la tarjeta instalada.</p>
+          <p class="hint">Ideas: a <b>inactivos</b> "Te extrañamos, volvé y te regalamos…", a <b>VIP</b> "Probá primero el nuevo plato", a <b>nuevos</b> "Tu segunda visita suma doble".</p>
         </div>
       </div>`;
     const f = $("#pf", el);
     if (f) {
-      f.title.addEventListener("input", () => ($("#pv-t", el).textContent = f.title.value || "Título de la promoción"));
+      f.title.addEventListener("input", () => ($("#pv-t", el).textContent = f.title.value || "Título de la campaña"));
       f.message.addEventListener("input", () => ($("#pv-m", el).textContent = f.message.value || "…"));
+      f.addEventListener("change", (e) => {
+        if (e.target.name === "segment") chosen = e.target.value;
+      });
       f.addEventListener("submit", async (e) => {
         e.preventDefault();
-        if (!(await confirmBox("Enviar promoción", "Se enviará a todas las tarjetas activas. ¿Continuar?", "Enviar"))) return;
+        const seg = f.segment.value || "all";
+        const aud = p.audiences.find((a) => a.key === seg);
+        if (!(await confirmBox("Enviar campaña", `Se enviará a ${aud.count} ${aud.count === 1 ? "cliente" : "clientes"} (${aud.label}). ¿Continuar?`, "Enviar"))) return;
         try {
-          await api("/promotions", { method: "POST", body: { title: f.title.value, message: f.message.value } });
-          toast("Promoción enviada 📣");
+          const r = await api("/promotions", { method: "POST", body: { title: f.title.value, message: f.message.value, segment: seg } });
+          toast(`Campaña enviada a ${r.recipients} ${r.recipients === 1 ? "cliente" : "clientes"} 📣`);
           render();
         } catch (err) {
           toast(err.message, "error");
         }
       });
     }
-    $("#clear", el)?.addEventListener("click", async () => {
-      await api("/promotions/current", { method: "DELETE" });
-      toast("Promoción retirada");
-      render();
-    });
+    $$("[data-end]", el).forEach((b) =>
+      b.addEventListener("click", async () => {
+        await api(`/promotions/${b.dataset.end}`, { method: "DELETE" });
+        toast("Campaña retirada");
+        render();
+      })
+    );
   };
   await render();
 }
@@ -953,25 +1103,40 @@ async function viewQr(el) {
   const p = r.program;
   const isLan = r.url.startsWith("http://");
   const suggest = location.protocol === "https:" && !r.url.startsWith(location.origin) && isOwner();
+  const verb = p.cardType === "stamps" ? "Juntá sellos" : "Sumá puntos";
+  const gift = p.welcomeBonus > 0 ? ` y recibí ${p.welcomeBonus} ${p.welcomeBonus === 1 ? p.units.one : p.units.many} de regalo` : "";
+  const shareText = `¡Unite a ${p.programName} de ${p.businessName}! Registrate gratis en 30 segundos${gift}: ${r.url}`;
   el.innerHTML = `
     <div class="page-head">
-      <div><h1>QR de registro</h1><p class="sub">Imprimilo y ponelo en caja, en la mesa o en el camión.</p></div>
-      <div class="actions"><button class="btn primary" id="print">Imprimir póster</button></div>
+      <div><h1>QR de registro</h1><p class="sub">Imprimilo y ponelo en caja, en la mesa o en el camión. También podés mandar el enlace por WhatsApp.</p></div>
+      <div class="actions">
+        <a class="btn" target="_blank" rel="noopener" href="${esc(waLink("", shareText))}">Compartir por WhatsApp</a>
+        <button class="btn" id="copy-link">Copiar enlace</button>
+        <button class="btn primary" id="print">Imprimir póster</button>
+      </div>
     </div>
-    ${isLan ? `<div class="info-box" style="margin-bottom:16px">Este QR apunta a <b>${esc(r.url)}</b> (sin https): funciona con celulares conectados al mismo Wi-Fi que esta computadora. Para que funcione con datos móviles usá un túnel https o un dominio (Ajustes → URL pública).</div>` : ""}
+    ${isLan ? `<div class="info-box" style="margin-bottom:16px">Este QR apunta a <b>${esc(r.url)}</b> (sin https): funciona con celulares conectados al mismo Wi-Fi que esta computadora. Para que funcione con datos móviles o por WhatsApp usá un túnel https o un dominio (Ajustes → URL pública).</div>` : ""}
     ${suggest ? `<div class="ok-box" style="margin-bottom:16px">Estás usando <b>${esc(location.origin)}</b>. <button class="btn sm" id="use-origin">Usar esta URL para el QR</button></div>` : ""}
     <div class="poster">
       <div class="top"><img src="${esc(p.logoUrl)}" alt=""><div><h2>${esc(p.programName)}</h2><p>${esc(p.businessName)}</p></div></div>
       <div class="body">
-        <h3>Sumá puntos en cada compra</h3>
+        <h3>${verb} en cada compra</h3>
         <div class="muted">${esc(p.rule)}</div>
-        ${p.welcomeBonus > 0 ? `<div class="perk">🎁 ${p.welcomeBonus} puntos de regalo al registrarte</div>` : ""}
+        ${p.welcomeBonus > 0 ? `<div class="perk">🎁 ${p.welcomeBonus} ${esc(p.welcomeBonus === 1 ? p.units.one : p.units.many)} de regalo al registrarte</div>` : ""}
         <div class="qr-big">${r.svg}</div>
         <div class="steps"><div><b>1</b>Escaneá con la cámara</div><div><b>2</b>Llená tus datos</div><div><b>3</b>Guardá tu tarjeta</div></div>
-        <div class="url">${esc(r.url)}</div>
+        <div class="url">${esc(r.url)} · Sin app, sin cuenta</div>
       </div>
     </div>`;
   $("#print", el).addEventListener("click", () => print());
+  $("#copy-link", el).addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(r.url);
+      toast("Enlace copiado");
+    } catch {
+      toast(r.url);
+    }
+  });
   $("#use-origin", el)?.addEventListener("click", async () => {
     await api("/settings", { method: "PUT", body: { publicUrl: location.origin } });
     toast("URL pública actualizada");
@@ -989,11 +1154,30 @@ async function viewConfig(el) {
   const statusItem = (name, st) => `<li><b>${name}</b> <span class="pill ${st.enabled ? "ok" : "warn"}">${st.enabled ? "Activo" : "Falta configurar"}</span>
     ${st.missing.length ? `<ul>${st.missing.map((m) => `<li><code>${esc(m)}</code></li>`).join("")}</ul>` : ""}
     ${st.warnings.length ? `<ul>${st.warnings.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : ""}</li>`;
+  const planFeatures = {
+    base: ["Tarjeta con tu marca en Apple y Google Wallet", "Puntos o sellos y premios", "Panel, cajeros y exportación", "Campañas a todos los clientes"],
+    plata: ["Todo lo del plan Base", "Niveles con bono (ej. Oro +10%)", "Segmentos: nuevos, frecuentes, inactivos, VIP", "Campañas por segmento", "Panel avanzado de recurrencia"],
+  };
+  const tierRow = (t = { name: "", min: "", bonus: 0 }) => `<div class="tier-row">
+      <input class="input" data-t="name" value="${esc(t.name)}" placeholder="Nombre" maxlength="20">
+      <input class="input" data-t="min" type="number" min="0" step="1" value="${t.min}" placeholder="Desde">
+      <input class="input" data-t="bonus" type="number" min="0" max="200" step="1" value="${t.bonus}" placeholder="% bono">
+      <button type="button" class="btn sm ghost" data-del-tier title="Quitar">✕</button></div>`;
 
   el.innerHTML = `
     <div class="page-head"><div><h1>Ajustes</h1><p class="sub">Todo lo que ve el cliente se puede personalizar por negocio.</p></div></div>
     <form id="cf" class="config-grid">
       <div class="stack">
+        <section class="card"><h2>Plan contratado</h2>
+          <div class="row" style="margin-top:12px">${data.plans
+            .map(
+              (pl) => `<label class="plan-card"><input type="radio" name="plan" value="${pl.id}" ${s.plan === pl.id ? "checked" : ""}> <b>Plan ${esc(pl.name)}</b>
+                <ul>${(planFeatures[pl.id] || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul></label>`
+            )
+            .join("")}</div>
+          <p class="hint">Útil en demos: cambiá de plan para mostrar qué agrega cada uno.</p>
+        </section>
+
         <section class="card"><h2>Marca</h2>
           <div class="row">
             <label class="field"><span>Nombre del negocio</span><input class="input" name="businessName" value="${esc(s.businessName)}" maxlength="40"></label>
@@ -1011,19 +1195,54 @@ async function viewConfig(el) {
           <div class="field"><span>Logo (PNG cuadrado, idealmente 660×660)</span>
             <div style="display:flex;gap:8px;flex-wrap:wrap"><input type="file" accept="image/png" id="logo-file" hidden><button type="button" class="btn" id="logo-btn">Subir logo</button>
             ${data.customLogo ? '<button type="button" class="btn ghost" id="logo-reset">Usar logo por defecto</button>' : ""}</div></div>
+          <div class="field"><span>Foto de portada (tu producto o local)</span>
+            ${data.customCover ? `<img class="cover-preview" src="/media/cover.png?v=${Date.now()}" alt="">` : ""}
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><input type="file" accept="image/*" id="cover-file" hidden><button type="button" class="btn" id="cover-btn">${data.customCover ? "Cambiar foto" : "Subir foto"}</button>
+            ${data.customCover ? '<button type="button" class="btn ghost" id="cover-reset">Quitar foto</button>' : ""}</div>
+            <small>Se recorta automáticamente a formato franja. Aparece en la tarjeta web, en Apple Wallet (detrás de ${s.cardType === "stamps" ? "los sellos" : "los puntos"}) y en Google Wallet.</small></div>
         </section>
 
-        <section class="card"><h2>Reglas de puntos</h2>
-          <label class="check"><input type="radio" name="mode" value="amount" ${s.pointsRule.mode === "amount" ? "checked" : ""}> Por monto de compra</label>
-          <label class="check"><input type="radio" name="mode" value="visit" ${s.pointsRule.mode === "visit" ? "checked" : ""}> Por visita (tipo tarjeta de sellos)</label>
-          <div class="row" style="margin-top:10px">
-            <label class="field" data-mode="amount"><span>Puntos</span><input class="input" type="number" name="points" min="1" step="1" value="${s.pointsRule.points}"></label>
-            <label class="field" data-mode="amount"><span>por cada (monto)</span><input class="input" type="number" name="spend" min="0.01" step="any" value="${s.pointsRule.spend}"></label>
-            <label class="field" data-mode="visit"><span>Puntos por visita</span><input class="input" type="number" name="perVisit" min="1" step="1" value="${s.pointsRule.perVisit}"></label>
-            <label class="field"><span>Bono de bienvenida</span><input class="input" type="number" name="welcomeBonus" min="0" step="1" value="${s.welcomeBonus}"></label>
+        <section class="card"><h2>Tipo de tarjeta y reglas</h2>
+          <div class="row">
+            <label class="plan-card"><input type="radio" name="cardType" value="points" ${s.cardType !== "stamps" ? "checked" : ""}> <b>Tarjeta de puntos</b><ul><li>Suma según el monto o por visita</li><li>Varios premios con distinto costo</li></ul></label>
+            <label class="plan-card"><input type="radio" name="cardType" value="stamps" ${s.cardType === "stamps" ? "checked" : ""}> <b>Tarjeta de sellos</b><ul><li>1 sello por compra (opcional: monto mínimo)</li><li>Ej. 10 sellos = producto gratis</li></ul></label>
           </div>
+          <div data-type="points" style="margin-top:12px">
+            <label class="check"><input type="radio" name="mode" value="amount" ${s.pointsRule.mode === "amount" ? "checked" : ""}> Por monto de compra</label>
+            <label class="check"><input type="radio" name="mode" value="visit" ${s.pointsRule.mode === "visit" ? "checked" : ""}> Por visita</label>
+            <div class="row" style="margin-top:10px">
+              <label class="field" data-mode="amount"><span>Puntos</span><input class="input" type="number" name="points" min="1" step="1" value="${s.pointsRule.points}"></label>
+              <label class="field" data-mode="amount"><span>por cada (monto)</span><input class="input" type="number" name="spend" min="0.01" step="any" value="${s.pointsRule.spend}"></label>
+              <label class="field" data-mode="visit"><span>Puntos por visita</span><input class="input" type="number" name="perVisit" min="1" step="1" value="${s.pointsRule.perVisit}"></label>
+            </div>
+          </div>
+          <div data-type="stamps" style="margin-top:12px">
+            <label class="field"><span>Compra mínima para ganar un sello (0 = cualquier compra)</span><input class="input" type="number" name="minSpend" min="0" step="any" value="${s.stampRule.minSpend}"></label>
+            <p class="info-box" id="stamp-hint" hidden>Al pasar a sellos, revisá los premios: sus costos ahora son sellos (ej. 5 sellos = refresco, 10 sellos = combo).</p>
+          </div>
+          <div class="row"><label class="field"><span>Regalo de bienvenida</span><input class="input" type="number" name="welcomeBonus" min="0" step="1" value="${s.welcomeBonus}"></label></div>
           <p class="hint" id="rule-example"></p>
         </section>
+
+        ${
+          data.plans.find((p) => p.id === s.plan)?.tiers
+            ? `<section class="card"><h2>Niveles <span class="pill">Plata</span></h2>
+                <p class="hint" style="margin-top:4px">Según lo acumulado en toda su historia. El bono suma un % extra de puntos en cada compra (no aplica a sellos).</p>
+                <div class="tier-row muted" style="font-size:12px;font-weight:600"><span>Nombre</span><span>Desde</span><span>% bono</span><span></span></div>
+                <div id="tiers">${s.tiers.map(tierRow).join("")}</div>
+                <button type="button" class="btn sm" id="add-tier">+ Agregar nivel</button>
+              </section>
+              <section class="card"><h2>Segmentos <span class="pill">Plata</span></h2>
+                <div class="row">
+                  <label class="field"><span>Nuevos: registrados hace menos de (días)</span><input class="input" type="number" name="newDays" min="1" value="${s.segments.newDays}"></label>
+                  <label class="field"><span>Frecuentes: compras mínimas</span><input class="input" type="number" name="frequentVisits" min="1" value="${s.segments.frequentVisits}"></label>
+                  <label class="field"><span>…en los últimos (días)</span><input class="input" type="number" name="frequentDays" min="1" value="${s.segments.frequentDays}"></label>
+                  <label class="field"><span>Inactivos: sin comprar hace (días)</span><input class="input" type="number" name="inactiveDays" min="1" value="${s.segments.inactiveDays}"></label>
+                </div>
+                <p class="hint">VIP = clientes en el nivel más alto.</p>
+              </section>`
+            : ""
+        }
 
         <section class="card"><h2>Región</h2>
           <div class="row">
@@ -1045,7 +1264,7 @@ async function viewConfig(el) {
           </div>
         </section>
 
-        <section class="card"><h2>Ubicación (Apple Wallet)</h2>
+        <section class="card"><h2>Ubicación (aviso al pasar cerca)</h2>
           <p class="hint" style="margin-top:0">Con coordenadas, el iPhone muestra la tarjeta en la pantalla bloqueada cuando el cliente está cerca del local.</p>
           <div class="row">
             <label class="field"><span>Latitud</span><input class="input" name="latitude" value="${s.location.latitude ?? ""}" placeholder="10.0163"></label>
@@ -1056,7 +1275,7 @@ async function viewConfig(el) {
 
         <section class="card"><h2>URL pública</h2>
           <label class="field"><span>URL base (vacía = IP de la red local)</span><input class="input" name="publicUrl" value="${esc(s.publicUrl)}" placeholder="https://mi-negocio.trycloudflare.com">
-          <small>Actual: ${esc(data.baseUrl)}. Necesaria en https para Google Wallet y para que Apple Wallet se actualice solo.</small></label>
+          <small>Actual: ${esc(data.baseUrl)}. Necesaria en https para Google Wallet, para que Apple Wallet se actualice solo y para compartir por WhatsApp.</small></label>
         </section>
 
         <section class="card"><h2>Términos y privacidad</h2>
@@ -1068,30 +1287,38 @@ async function viewConfig(el) {
       <aside class="stack sticky">
         <div class="card"><h2>Vista previa</h2>
           <div class="mini-pass" id="mini"><div class="top"><img data-logo src="/media/logo.png" alt=""><div><b id="mp-biz">${esc(s.businessName)}</b><div style="font-size:12px;opacity:.85" id="mp-prog">${esc(s.programName)}</div></div>
-          <div class="pts"><span class="lbl">PUNTOS</span><span class="big">42</span></div></div><div class="name"><span class="lbl">MIEMBRO</span>María Rodríguez</div></div>
+          <div class="pts"><span class="lbl" id="mp-unit">PUNTOS</span><span class="big" id="mp-val">42</span></div></div><div class="name"><span class="lbl">MIEMBRO</span>María Rodríguez</div></div>
         </div>
         <div class="card"><h2>Wallets</h2><ul class="status-list">${statusItem("Apple Wallet", w.apple)}${statusItem("Google Wallet", w.google)}</ul>
-          <p class="hint">Sin wallets configuradas, el cliente usa la tarjeta web (con QR, puntos en vivo y opción de instalarla). Ver README → Wallets.</p></div>
+          <p class="hint">Sin wallets configuradas, el cliente usa la tarjeta web (con QR, saldo en vivo y opción de instalarla). Ver README → Wallets.</p></div>
         <div class="card" id="users-card"><h2>Usuarios del panel</h2><div id="users"></div></div>
         <div class="card"><h2>Datos</h2><a class="btn" href="/api/admin/export/customers.csv">Exportar clientes (CSV)</a></div>
       </aside>
     </form>`;
 
   const f = $("#cf", el);
-  const syncMode = () => $$("[data-mode]", f).forEach((x) => (x.hidden = x.dataset.mode !== f.mode.value));
+  const sync = () => {
+    const type = f.cardType.value;
+    $$("[data-type]", f).forEach((x) => (x.hidden = x.dataset.type !== type));
+    $$("[data-mode]", f).forEach((x) => (x.hidden = x.dataset.mode !== f.mode.value));
+    $("#stamp-hint", el).hidden = !(type === "stamps" && s.cardType !== "stamps");
+  };
   const example = () => {
-    const mode = f.mode.value;
-    const cur = f.currencyCode.value.toUpperCase() || "CRC";
     let fmt;
     try {
-      fmt = new Intl.NumberFormat(f.locale.value || "es-CR", { style: "currency", currency: cur, maximumFractionDigits: Number(f.currencyDecimals.value) || 0 });
+      fmt = new Intl.NumberFormat(f.locale.value || "es-CR", { style: "currency", currency: f.currencyCode.value.toUpperCase() || "CRC", maximumFractionDigits: Number(f.currencyDecimals.value) || 0 });
     } catch {
       fmt = moneyFmt;
+    }
+    if (f.cardType.value === "stamps") {
+      const min = Number(f.minSpend.value) || 0;
+      $("#rule-example", el).textContent = min ? `Ejemplo: cada compra desde ${fmt.format(min)} suma 1 sello.` : "Ejemplo: cada compra suma 1 sello, sin importar el monto.";
+      return;
     }
     const spend = Number(f.spend.value) || 1;
     const sample = spend * 5.5;
     $("#rule-example", el).textContent =
-      mode === "visit"
+      f.mode.value === "visit"
         ? `Ejemplo: cada compra suma ${f.perVisit.value} punto(s), sin importar el monto.`
         : `Ejemplo: una compra de ${fmt.format(sample)} suma ${Math.floor(sample / spend) * (Number(f.points.value) || 0)} puntos.`;
   };
@@ -1102,28 +1329,45 @@ async function viewConfig(el) {
     mini.style.setProperty("--accent", f.accentColor.value);
     $("#mp-biz", el).textContent = f.businessName.value;
     $("#mp-prog", el).textContent = f.programName.value;
+    $("#mp-unit", el).textContent = f.cardType.value === "stamps" ? "SELLOS" : "PUNTOS";
+    $("#mp-val", el).textContent = f.cardType.value === "stamps" ? "7/10" : "42";
     $$(".color-row", f).forEach((r) => ($("code", r).textContent = $("input", r).value.toUpperCase()));
   };
   f.addEventListener("input", () => {
-    syncMode();
+    sync();
     example();
     preview();
     $("#dirty", el).textContent = "Cambios sin guardar";
   });
-  syncMode();
+  sync();
   example();
   preview();
 
+  $("#add-tier", el)?.addEventListener("click", () => {
+    $("#tiers", el).insertAdjacentHTML("beforeend", tierRow());
+    $("#dirty", el).textContent = "Cambios sin guardar";
+  });
+  $("#tiers", el)?.addEventListener("click", (e) => {
+    if (e.target.matches("[data-del-tier]") && $$(".tier-row", $("#tiers", el)).length > 1) {
+      e.target.closest(".tier-row").remove();
+      $("#dirty", el).textContent = "Cambios sin guardar";
+    }
+  });
+
   f.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const planChanged = f.plan.value !== s.plan;
     const body = {
+      plan: f.plan.value,
       businessName: f.businessName.value,
       programName: f.programName.value,
       tagline: f.tagline.value,
       primaryColor: f.primaryColor.value,
       accentColor: f.accentColor.value,
       textColor: f.textColor.value,
+      cardType: f.cardType.value,
       pointsRule: { mode: f.mode.value, points: Number(f.points.value), spend: Number(f.spend.value), perVisit: Number(f.perVisit.value) },
+      stampRule: { minSpend: Number(f.minSpend.value) || 0 },
       welcomeBonus: Number(f.welcomeBonus.value),
       currency: { code: f.currencyCode.value, decimals: Number(f.currencyDecimals.value) },
       phonePrefix: f.phonePrefix.value.trim(),
@@ -1135,36 +1379,63 @@ async function viewConfig(el) {
       publicUrl: f.publicUrl.value.trim(),
       termsText: f.termsText.value,
     };
+    if ($("#tiers", el)) {
+      body.tiers = $$(".tier-row", $("#tiers", el)).map((r) => ({
+        name: $("[data-t=name]", r).value,
+        min: Number($("[data-t=min]", r).value),
+        bonus: Number($("[data-t=bonus]", r).value) || 0,
+      }));
+      body.segments = {
+        newDays: Number(f.newDays.value),
+        frequentVisits: Number(f.frequentVisits.value),
+        frequentDays: Number(f.frequentDays.value),
+        inactiveDays: Number(f.inactiveDays.value),
+      };
+    }
     try {
       await api("/settings", { method: "PUT", body });
       await refreshMe();
       toast("Ajustes guardados");
       $("#dirty", el).textContent = "";
+      if (planChanged || body.cardType !== s.cardType) route();
     } catch (err) {
       toast(err.message, "error");
     }
   });
 
+  const upload = (endpoint, dataUrl, msg) =>
+    api(endpoint, { method: "POST", body: { dataUrl } })
+      .then(() => {
+        toast(msg);
+        applyBrand();
+        route();
+      })
+      .catch((err) => toast(err.message, "error"));
   $("#logo-btn", el).addEventListener("click", () => $("#logo-file", el).click());
   $("#logo-file", el).addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        await api("/settings/logo", { method: "POST", body: { dataUrl: reader.result } });
-        toast("Logo actualizado");
-        applyBrand();
-        route();
-      } catch (err) {
-        toast(err.message, "error");
-      }
-    };
+    reader.onload = () => upload("/settings/logo", reader.result, "Logo actualizado");
     reader.readAsDataURL(file);
   });
   $("#logo-reset", el)?.addEventListener("click", async () => {
     await api("/settings/logo", { method: "DELETE" });
     applyBrand();
+    route();
+  });
+  $("#cover-btn", el).addEventListener("click", () => $("#cover-file", el).click());
+  $("#cover-file", el).addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      upload("/settings/cover", await cropCover(file), "Foto de portada actualizada");
+    } catch {
+      toast("No se pudo leer la imagen.", "error");
+    }
+  });
+  $("#cover-reset", el)?.addEventListener("click", async () => {
+    await api("/settings/cover", { method: "DELETE" });
     route();
   });
 
@@ -1181,7 +1452,7 @@ async function viewConfig(el) {
           <label class="field"><span>Nombre</span><input class="input" data-u="name"></label>
           <label class="field"><span>Correo</span><input class="input" data-u="email" type="email"></label>
           <label class="field"><span>Contraseña</span><input class="input" data-u="password" type="text" autocomplete="off"></label>
-          <label class="field"><span>Rol</span><select class="input" data-u="role"><option value="staff">Cajero (solo caja y clientes)</option><option value="owner">Dueño (acceso total)</option></select></label>
+          <label class="field"><span>Rol</span><select class="input" data-u="role"><option value="staff">Cajero (escanea, suma y canjea)</option><option value="owner">Dueño (acceso total)</option></select></label>
           <button type="button" class="btn primary" id="u-add">Crear usuario</button>
         </div>
       </details>`;
@@ -1204,6 +1475,26 @@ async function viewConfig(el) {
     });
   };
   loadUsers();
+}
+
+// Recorta la foto al formato franja del pase de Apple (1125×369) y la convierte a PNG.
+async function cropCover(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const W = 1125;
+    const H = 369;
+    const canvas = Object.assign(document.createElement("canvas"), { width: W, height: H });
+    const scale = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    const dw = img.naturalWidth * scale;
+    const dh = img.naturalHeight * scale;
+    canvas.getContext("2d").drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+    return canvas.toDataURL("image/png");
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 // ---------------- Arranque ----------------

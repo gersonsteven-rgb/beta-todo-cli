@@ -6,8 +6,8 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { ROOT, config } from "../config.js";
 import { db } from "../db.js";
-import { getSettings, ruleText } from "../settings.js";
-import { cardState, baseUrl, logoPath } from "../services/cards.js";
+import { getSettings, ruleText, shortQty } from "../settings.js";
+import { cardState, baseUrl, logoPath, coverPath } from "../services/cards.js";
 
 const cfg = config.google;
 const API = "https://walletobjects.googleapis.com/walletobjects/v1";
@@ -56,36 +56,46 @@ export function loyaltyClass() {
     multipleDevicesAndHoldersAllowedStatus: "ONE_USER_ALL_DEVICES",
     textModulesData: [{ id: "how", header: "¿Cómo funciona?", body: `${ruleText(s)}. Mostrá tu código en caja en cada compra.` }],
   };
+  const cover = coverPath();
+  if (cover) cls.heroImage = { sourceUri: { uri: `${baseUrl()}${cover}` } };
   const { latitude, longitude } = s.location || {};
   if (Number.isFinite(latitude) && Number.isFinite(longitude)) cls.locations = [{ latitude, longitude }];
   return JSON.parse(JSON.stringify(cls));
 }
 
 export function loyaltyObject(customer) {
+  const s = getSettings();
   const state = cardState(customer);
   const available = state.rewards.filter((r) => r.unlocked);
+  const textModulesData = [
+    {
+      id: "next",
+      header: "Próximo premio",
+      body: state.next ? `${state.next.name} — te faltan ${shortQty(state.next.missing, s)}` : "¡Tenés todos los premios desbloqueados!",
+    },
+    {
+      id: "available",
+      header: "Premios disponibles",
+      body: available.length ? available.map((r) => r.name).join(", ") : "Todavía ninguno. ¡Seguí sumando!",
+    },
+    { id: "catalog", header: "Catálogo", body: state.rewards.map((r) => `${shortQty(r.cost, s)} — ${r.name}`).join("\n") || "Próximamente" },
+  ];
+  if (state.promo) textModulesData.unshift({ id: "promo", header: state.promo.title, body: state.promo.message });
   return {
     id: objectId(customer),
     classId: classId(),
     state: "ACTIVE",
     accountId: customer.code,
     accountName: customer.full_name,
-    loyaltyPoints: { label: "Puntos", balance: { int: state.points } },
-    secondaryLoyaltyPoints: { label: "Visitas", balance: { int: state.visits } },
+    loyaltyPoints:
+      s.cardType === "stamps"
+        ? { label: "Sellos", balance: { string: `${state.stamps.filled} de ${state.stamps.goal}` } }
+        : { label: "Puntos", balance: { int: state.points } },
+    secondaryLoyaltyPoints: state.tier
+      ? { label: "Nivel", balance: { string: state.tier.name } }
+      : { label: "Visitas", balance: { int: state.visits } },
     barcode: { type: "QR_CODE", value: customer.code, alternateText: customer.code },
-    textModulesData: [
-      {
-        id: "next",
-        header: "Próximo premio",
-        body: state.next ? `${state.next.name} — te faltan ${state.next.missing} pts` : "¡Tenés todos los premios desbloqueados!",
-      },
-      {
-        id: "available",
-        header: "Premios disponibles",
-        body: available.length ? available.map((r) => r.name).join(", ") : "Todavía ninguno. ¡Seguí sumando!",
-      },
-      { id: "catalog", header: "Catálogo", body: state.rewards.map((r) => `${r.cost} pts — ${r.name}`).join("\n") || "Próximamente" },
-    ],
+    textModulesData,
     linksModuleData: { uris: [{ id: "web", uri: `${baseUrl()}/tarjeta/${customer.serial}`, description: "Ver mi tarjeta web" }] },
   };
 }
@@ -171,11 +181,28 @@ export async function expireObject(customer) {
   await api("PATCH", `/loyaltyObject/${objectId(customer)}`, { state: "INACTIVE" });
 }
 
-// Mensaje a todos los que tienen la tarjeta (con notificación en el celular).
-export async function sendClassMessage(promo) {
+// Campaña: mensaje con notificación a cada destinatario que guardó la tarjeta.
+// (Google limita a ~3 notificaciones por pase cada 24 h.)
+export async function sendMessage(customers, promo) {
   if (!status().enabled) return;
-  await upsertClass();
-  await api("POST", `/loyaltyClass/${classId()}/addMessage`, {
-    message: { id: `promo-${promo.id}`, header: promo.title, body: promo.message, messageType: "TEXT_AND_NOTIFY" },
-  });
+  for (const c of customers.filter((x) => x.google_clicked)) {
+    try {
+      await updateObject(c);
+      await api("POST", `/loyaltyObject/${objectId(c)}/addMessage`, {
+        message: { id: `promo-${promo.id}`, header: promo.title, body: promo.message, messageType: "TEXT_AND_NOTIFY" },
+      });
+    } catch (err) {
+      console.error("[google]", err.message);
+    }
+  }
+}
+
+export async function updateObjects(customers) {
+  for (const c of customers) {
+    try {
+      await updateObject(c);
+    } catch (err) {
+      console.error("[google]", err.message);
+    }
+  }
 }

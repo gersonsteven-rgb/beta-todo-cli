@@ -1,8 +1,17 @@
-// Configuración del negocio (marca, reglas de puntos, contacto...).
+// Configuración del negocio (marca, plan, reglas de puntos o sellos, niveles...).
 // Los valores por defecto son el preset del piloto: Fusion Truck (Alajuela, CR).
 import { db } from "./db.js";
 
+// Planes comerciales (ver horaceroia.com/servicios/fidelizacion).
+// Base: tarjeta en wallet, puntos/sellos, premios, panel, cajeros, exportación.
+// Plata: + niveles, segmentación, campañas por segmento y panel avanzado.
+export const PLANS = {
+  base: { id: "base", name: "Base", tiers: false, segments: false, targetedCampaigns: false, advancedStats: false },
+  plata: { id: "plata", name: "Plata", tiers: true, segments: true, targetedCampaigns: true, advancedStats: true },
+};
+
 export const DEFAULT_SETTINGS = {
+  plan: "plata",
   businessName: "Fusion Truck",
   programName: "Club Fusion",
   tagline: "Las papas más cargadas de Alajuela, ahora con premios.",
@@ -15,10 +24,22 @@ export const DEFAULT_SETTINGS = {
   currency: { code: "CRC", decimals: 0 },
   countryCode: "CR",
   phonePrefix: "+506",
-  // mode "amount": `points` puntos por cada `spend` gastado.
-  // mode "visit": `perVisit` puntos por compra (tipo tarjeta de sellos).
+  // "points": tarjeta de puntos · "stamps": tarjeta de sellos (1 sello por compra)
+  cardType: "points",
+  // Puntos — mode "amount": `points` por cada `spend` gastado · mode "visit": `perVisit` por compra.
   pointsRule: { mode: "amount", spend: 1000, points: 1, perVisit: 1 },
+  // Sellos — compra mínima para ganar un sello (0 = cualquier compra).
+  stampRule: { minSpend: 0 },
   welcomeBonus: 5,
+  // Niveles por puntos/sellos acumulados en la historia del cliente (plan Plata).
+  // `bonus`: % extra de puntos en cada compra para ese nivel.
+  tiers: [
+    { name: "Clásico", min: 0, bonus: 0 },
+    { name: "Oro", min: 50, bonus: 10 },
+    { name: "VIP", min: 110, bonus: 20 },
+  ],
+  // Reglas de segmentación (plan Plata).
+  segments: { newDays: 30, frequentVisits: 3, frequentDays: 30, inactiveDays: 30 },
   contact: {
     address: "50 m norte de la Iglesia La Agonía, Alajuela",
     hours: "Todos los días, 6:00 p. m. – 10:00 p. m.",
@@ -34,8 +55,6 @@ export const DEFAULT_SETTINGS = {
     "Persona frente al Tratamiento de sus Datos Personales. Podés solicitar la eliminación de tus datos en cualquier momento.",
   // Sobrescribe PUBLIC_URL (útil para pegar la URL de un túnel https durante el demo).
   publicUrl: "",
-  // Promoción vigente (se muestra en la tarjeta y se envía a las wallets).
-  promo: null,
 };
 
 const KEY = "business";
@@ -69,11 +88,29 @@ export function saveSettings(patch) {
   return next;
 }
 
-export function resetSettingsCache() {
-  cache = null;
+export function features(settings = getSettings()) {
+  return PLANS[settings.plan] || PLANS.plata;
 }
 
-// ---- Helpers de dinero y puntos ----
+// ---- Unidades: puntos o sellos ----
+
+export function units(settings = getSettings()) {
+  return settings.cardType === "stamps"
+    ? { one: "sello", many: "sellos", short: "sellos", label: "Sellos" }
+    : { one: "punto", many: "puntos", short: "pts", label: "Puntos" };
+}
+
+export function qty(n, settings = getSettings()) {
+  const u = units(settings);
+  return `${n} ${Math.abs(n) === 1 ? u.one : u.many}`;
+}
+
+// Forma corta: "12 pts" o "1 sello" / "3 sellos".
+export function shortQty(n, settings = getSettings()) {
+  return settings.cardType === "stamps" ? qty(n, settings) : `${n} ${units(settings).short}`;
+}
+
+// ---- Dinero ----
 
 export function minorFactor(settings = getSettings()) {
   return 10 ** (settings.currency.decimals || 0);
@@ -89,15 +126,53 @@ export function formatMoney(minor, settings = getSettings()) {
   }).format(minor / minorFactor(settings));
 }
 
-export function pointsForPurchase(amountMinor, settings = getSettings()) {
+// ---- Niveles ----
+
+export function tierFor(lifetime, settings = getSettings()) {
+  if (!features(settings).tiers || !settings.tiers?.length) return null;
+  const sorted = [...settings.tiers].sort((a, b) => a.min - b.min);
+  let index = 0;
+  sorted.forEach((t, i) => {
+    if (lifetime >= t.min) index = i;
+  });
+  const current = sorted[index];
+  const next = sorted[index + 1] || null;
+  return {
+    name: current.name,
+    bonus: current.bonus || 0,
+    index,
+    isTop: !next && sorted.length > 1,
+    next: next ? { name: next.name, min: next.min, missing: next.min - lifetime } : null,
+  };
+}
+
+// ---- Cálculo de puntos/sellos por compra ----
+
+export function purchasePoints(amountMinor, settings = getSettings(), tier = null) {
+  if (settings.cardType === "stamps") {
+    const min = (settings.stampRule?.minSpend || 0) * minorFactor(settings);
+    return { base: amountMinor >= min ? 1 : 0, bonus: 0, total: amountMinor >= min ? 1 : 0 };
+  }
   const rule = settings.pointsRule;
-  if (rule.mode === "visit") return Math.max(0, Math.floor(rule.perVisit));
-  const spendMinor = rule.spend * minorFactor(settings);
-  if (!(spendMinor > 0)) return 0;
-  return Math.floor(amountMinor / spendMinor) * rule.points;
+  let base = 0;
+  if (rule.mode === "visit") base = Math.max(0, Math.floor(rule.perVisit));
+  else {
+    const spendMinor = rule.spend * minorFactor(settings);
+    base = spendMinor > 0 ? Math.floor(amountMinor / spendMinor) * rule.points : 0;
+  }
+  const bonus = tier?.bonus ? Math.floor((base * tier.bonus) / 100) : 0;
+  return { base, bonus, total: base + bonus };
+}
+
+export function pointsForPurchase(amountMinor, settings = getSettings(), tier = null) {
+  return purchasePoints(amountMinor, settings, tier).total;
 }
 
 export function ruleText(settings = getSettings()) {
+  if (settings.cardType === "stamps") {
+    const min = settings.stampRule?.minSpend || 0;
+    return min > 0 ? `1 sello por cada compra desde ${formatMoney(min * minorFactor(settings), settings)}` : "1 sello por cada compra";
+  }
   const rule = settings.pointsRule;
   if (rule.mode === "visit") {
     return rule.perVisit === 1 ? "1 punto por cada compra" : `${rule.perVisit} puntos por cada compra`;

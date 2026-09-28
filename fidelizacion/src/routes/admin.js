@@ -6,7 +6,7 @@ import { db } from "../db.js";
 import { clearSession, hashPassword, rateLimit, requireAuth, requireOwner, sessionUser, setSession, verifyPassword } from "../lib/auth.js";
 import { normalizeCardCode } from "../lib/codes.js";
 import { publish, publishAll, subscribe } from "../lib/events.js";
-import { formatMoney, getSettings, minorFactor, ruleText, saveSettings } from "../settings.js";
+import { features, formatMoney, getSettings, minorFactor, PLANS, ruleText, saveSettings, tierFor, units } from "../settings.js";
 import { adjust, deleteCustomer, earn, LoyaltyError, redeem, registerCustomer, voidTransaction } from "../services/loyalty.js";
 import {
   activeRewards,
@@ -18,9 +18,12 @@ import {
   getCustomerBySerial,
   nextReward,
   programInfo,
+  vendorInfo,
 } from "../services/cards.js";
+import { SEGMENT_KEYS, audience, segmentCounts, segmentDefinitions, segmentMap } from "../services/segments.js";
+import { endCampaign, sendCampaign } from "../services/campaigns.js";
 import { wallet } from "../wallet/index.js";
-import { UPLOADED_LOGO } from "../wallet/images.js";
+import { COVER, UPLOADED_LOGO } from "../wallet/images.js";
 
 export const router = express.Router();
 
@@ -61,9 +64,16 @@ router.get("/me", (req, res) => {
       locale: s.locale,
       timezone: s.timezone,
       currency: s.currency,
+      cardType: s.cardType,
+      units: units(s),
       pointsRule: s.pointsRule,
+      stampRule: s.stampRule,
+      tiers: features(s).tiers ? [...s.tiers].sort((a, b) => a.min - b.min) : [],
       rule: ruleText(s),
     },
+    plan: features(s),
+    segments: features(s).segments ? segmentDefinitions(s) : null,
+    vendor: vendorInfo(),
   });
 });
 
@@ -71,8 +81,9 @@ router.get("/stream", (req, res) => subscribe("admin", req, res));
 
 // ---------- Vistas de cliente ----------
 
-function adminCustomer(c, rewards = activeRewards()) {
+function adminCustomer(c, rewards = activeRewards(), segments = null) {
   const s = getSettings();
+  const f = features(s);
   return {
     id: c.id,
     fullName: c.full_name,
@@ -94,6 +105,9 @@ function adminCustomer(c, rewards = activeRewards()) {
     next: nextReward(c.points, rewards),
     available: rewards.filter((r) => r.points_cost <= c.points).map((r) => ({ id: r.id, name: r.name, cost: r.points_cost })),
     cardUrl: `/tarjeta/${c.serial}`,
+    publicCardUrl: `${baseUrl()}/tarjeta/${c.serial}`,
+    tier: tierFor(c.lifetime_points, s),
+    segments: f.segments ? segments || segmentMap([c], s).get(c.id) || [] : [],
   };
 }
 
@@ -149,10 +163,17 @@ router.get("/customers", (req, res) => {
   const order = sorts[req.query.sort] || sorts.recent;
   const where = search ? "WHERE full_name LIKE ? OR email LIKE ? OR phone LIKE ? OR code LIKE ?" : "";
   const params = search ? Array(4).fill(`%${search}%`) : [];
-  const total = db.prepare(`SELECT COUNT(*) AS n FROM customers ${where}`).get(...params).n;
-  const rows = db.prepare(`SELECT * FROM customers ${where} ORDER BY ${order} LIMIT ? OFFSET ?`).all(...params, limit, offset);
+  const s = getSettings();
+  const segs = features(s).segments ? segmentMap(null, s) : new Map();
+  let rows = db.prepare(`SELECT * FROM customers ${where} ORDER BY ${order}`).all(...params);
+  const segment = SEGMENT_KEYS.includes(req.query.segment) && features(s).segments ? req.query.segment : null;
+  if (segment) rows = rows.filter((c) => segs.get(c.id)?.includes(segment));
   const rewards = activeRewards();
-  res.json({ total, customers: rows.map((c) => adminCustomer(c, rewards)) });
+  res.json({
+    total: rows.length,
+    customers: rows.slice(offset, offset + limit).map((c) => adminCustomer(c, rewards, segs.get(c.id))),
+    segmentCounts: features(s).segments ? segmentCounts(s) : null,
+  });
 });
 
 router.post("/customers", (req, res) => {
@@ -165,7 +186,7 @@ router.get("/customers/:id", (req, res) => res.json(customerDetail(mustCustomer(
 router.post("/customers/:id/earn", (req, res) => {
   const c = mustCustomer(req);
   const result = earn(c.id, req.body || {}, req.user.id);
-  res.json({ points: result.points, ...customerDetail(result.customer) });
+  res.json({ points: result.points, bonus: result.bonus, tierUp: result.tierUp, ...customerDetail(result.customer) });
 });
 
 router.post("/customers/:id/redeem", (req, res) => {
@@ -282,8 +303,34 @@ router.get("/stats", (req, res) => {
     )
     .all();
 
+  // Plan Plata: segmentos, niveles y frecuencia de regreso.
+  let advanced = null;
+  if (features(s).advancedStats) {
+    const freq = db
+      .prepare(
+        `SELECT COUNT(*) AS n, MIN(created_at) AS first, MAX(created_at) AS last FROM transactions
+         WHERE type = 'earn' AND voided_by IS NULL GROUP BY customer_id HAVING n >= 2`
+      )
+      .all();
+    const avgDays = freq.length
+      ? freq.reduce((a, r) => a + (Date.parse(r.last) - Date.parse(r.first)) / 86400e3 / (r.n - 1), 0) / freq.length
+      : null;
+    const tierCounts = new Map([...s.tiers].sort((a, b) => a.min - b.min).map((t) => [t.name, 0]));
+    for (const c of db.prepare("SELECT lifetime_points FROM customers").all()) {
+      const t = tierFor(c.lifetime_points, s);
+      if (t) tierCounts.set(t.name, (tierCounts.get(t.name) || 0) + 1);
+    }
+    advanced = {
+      avgDaysBetweenVisits: avgDays,
+      segments: segmentCounts(s),
+      segmentDefs: segmentDefinitions(s),
+      tiers: [...tierCounts].map(([name, n]) => ({ name, n })),
+    };
+  }
+
   res.json({
     days,
+    advanced,
     kpis: {
       customers: customers.n,
       newThisWeek: newWeek,
@@ -353,37 +400,49 @@ router.delete("/rewards/:id", requireOwner, (req, res) => {
   res.json({ ok: true });
 });
 
-// ---------- Promociones ----------
+// ---------- Campañas / promociones ----------
 
 router.get("/promotions", (req, res) => {
-  const rows = db.prepare("SELECT p.*, u.name AS user_name FROM promotions p LEFT JOIN users u ON u.id = p.user_id ORDER BY p.id DESC LIMIT 30").all();
-  const optIn = db.prepare("SELECT COUNT(*) AS n FROM customers WHERE marketing_opt_in = 1").get().n;
-  res.json({ current: getSettings().promo, history: rows, audience: { optIn, ...wallet.status() } });
+  const s = getSettings();
+  const rows = db
+    .prepare("SELECT p.*, u.name AS user_name FROM promotions p LEFT JOIN users u ON u.id = p.user_id ORDER BY p.id DESC LIMIT 30")
+    .all()
+    .map((p) => ({ id: p.id, title: p.title, message: p.message, segment: p.segment, recipients: p.recipients, active: Boolean(p.active), createdAt: p.created_at, userName: p.user_name }));
+  const keys = ["all", ...(features(s).targetedCampaigns ? SEGMENT_KEYS : [])];
+  const defs = segmentDefinitions(s);
+  const audiences = keys.map((k) => {
+    const list = audience(k, s);
+    return {
+      key: k,
+      label: k === "all" ? "Todos" : defs[k].label,
+      hint: k === "all" ? "Todos los clientes" : defs[k].hint,
+      count: list.length,
+      withWallet: list.filter((c) => c.apple_installed || c.google_clicked).length,
+    };
+  });
+  const totals = db.prepare("SELECT COUNT(*) AS n, SUM(marketing_opt_in) AS optIn FROM customers").get();
+  res.json({ campaigns: rows, audiences, totals: { customers: totals.n, optIn: totals.optIn || 0 }, wallet: wallet.status() });
 });
 
 router.post("/promotions", requireOwner, (req, res) => {
-  const title = String(req.body?.title || "").trim().slice(0, 40);
-  const message = String(req.body?.message || "").trim().slice(0, 240);
-  if (!title || !message) throw new LoyaltyError("La promoción necesita título y mensaje.");
-  const id = Number(db.prepare("INSERT INTO promotions (title, message, user_id) VALUES (?, ?, ?)").run(title, message, req.user.id).lastInsertRowid);
-  const promo = { id, title, message, createdAt: new Date().toISOString() };
-  saveSettings({ promo });
-  publishAll("card:", "promo", promo);
-  wallet.promoSent(promo);
-  res.status(201).json({ promo });
+  res.status(201).json(sendCampaign(req.body || {}, req.user.id));
 });
 
-router.delete("/promotions/current", requireOwner, (req, res) => {
-  saveSettings({ promo: null });
-  publishAll("card:", "promo", null);
-  wallet.programChanged();
-  res.json({ ok: true });
+router.delete("/promotions/:id", requireOwner, (req, res) => {
+  res.json(endCampaign(Number(req.params.id)));
 });
 
 // ---------- Configuración ----------
 
 router.get("/settings", (req, res) => {
-  res.json({ settings: getSettings(), baseUrl: baseUrl(), wallet: wallet.status(), customLogo: fs.existsSync(UPLOADED_LOGO) });
+  res.json({
+    settings: getSettings(),
+    plans: Object.values(PLANS),
+    baseUrl: baseUrl(),
+    wallet: wallet.status(),
+    customLogo: fs.existsSync(UPLOADED_LOGO),
+    customCover: fs.existsSync(COVER),
+  });
 });
 
 const HEX = /^#[0-9a-f]{6}$/i;
@@ -438,6 +497,33 @@ router.put("/settings", requireOwner, (req, res) => {
       perVisit: num(r.perVisit, { min: 1, max: 10000, int: true, label: "Puntos por visita" }),
     };
   }
+  if ("plan" in b) {
+    if (!PLANS[b.plan]) throw new LoyaltyError("Plan inválido.");
+    patch.plan = b.plan;
+  }
+  if ("cardType" in b) patch.cardType = b.cardType === "stamps" ? "stamps" : "points";
+  if ("stampRule" in b) patch.stampRule = { minSpend: num(b.stampRule?.minSpend ?? 0, { min: 0, label: "Compra mínima para sello" }) };
+  if ("tiers" in b) {
+    if (!Array.isArray(b.tiers) || !b.tiers.length || b.tiers.length > 6) throw new LoyaltyError("Definí entre 1 y 6 niveles.");
+    const tiers = b.tiers.map((t, i) => ({
+      name: text(t.name, 20, `Nombre del nivel ${i + 1}`) || `Nivel ${i + 1}`,
+      min: num(t.min, { min: 0, int: true, label: `Mínimo del nivel ${i + 1}` }),
+      bonus: num(t.bonus ?? 0, { min: 0, max: 200, int: true, label: `Bono del nivel ${i + 1}` }),
+    }));
+    tiers.sort((a, b2) => a.min - b2.min);
+    if (tiers[0].min !== 0) throw new LoyaltyError("El primer nivel debe empezar en 0.");
+    if (new Set(tiers.map((t) => t.min)).size !== tiers.length) throw new LoyaltyError("Cada nivel necesita un mínimo distinto.");
+    patch.tiers = tiers;
+  }
+  if ("segments" in b) {
+    const g = b.segments || {};
+    patch.segments = {
+      newDays: num(g.newDays, { min: 1, max: 365, int: true, label: "Días de cliente nuevo" }),
+      frequentVisits: num(g.frequentVisits, { min: 1, max: 100, int: true, label: "Compras de cliente frecuente" }),
+      frequentDays: num(g.frequentDays, { min: 1, max: 365, int: true, label: "Días de cliente frecuente" }),
+      inactiveDays: num(g.inactiveDays, { min: 1, max: 730, int: true, label: "Días de cliente inactivo" }),
+    };
+  }
   if ("welcomeBonus" in b) patch.welcomeBonus = num(b.welcomeBonus, { min: 0, max: 100000, int: true, label: "Bono de bienvenida" });
   if ("contact" in b) {
     patch.contact = {
@@ -485,6 +571,26 @@ router.post("/settings/logo", requireOwner, (req, res) => {
 
 router.delete("/settings/logo", requireOwner, (req, res) => {
   fs.rmSync(UPLOADED_LOGO, { force: true });
+  publishAll("card:", "program", programInfo());
+  wallet.programChanged();
+  res.json({ ok: true });
+});
+
+// Foto de portada: el panel la recorta a 1125×369 y la manda como PNG.
+router.post("/settings/cover", requireOwner, (req, res) => {
+  const m = /^data:image\/png;base64,(.+)$/.exec(String(req.body?.dataUrl || ""));
+  if (!m) throw new LoyaltyError("Subí la foto de portada como imagen.");
+  const buf = Buffer.from(m[1], "base64");
+  if (buf.length > 3 * 1024 * 1024) throw new LoyaltyError("La foto debe pesar menos de 3 MB.");
+  if (!buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) throw new LoyaltyError("Imagen inválida.");
+  fs.writeFileSync(COVER, buf);
+  publishAll("card:", "program", programInfo());
+  wallet.programChanged();
+  res.json({ ok: true });
+});
+
+router.delete("/settings/cover", requireOwner, (req, res) => {
+  fs.rmSync(COVER, { force: true });
   publishAll("card:", "program", programInfo());
   wallet.programChanged();
   res.json({ ok: true });

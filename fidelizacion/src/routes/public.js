@@ -10,7 +10,7 @@ import { getSettings } from "../settings.js";
 import { registerCustomer } from "../services/loyalty.js";
 import { cardState, getCustomerBySerial, programInfo } from "../services/cards.js";
 import { wallet } from "../wallet/index.js";
-import { logoFile } from "../wallet/images.js";
+import { COVER, coverVersion, logoFile } from "../wallet/images.js";
 
 const PUBLIC = path.join(ROOT, "public");
 export const router = express.Router();
@@ -67,6 +67,12 @@ router.get("/manifest.webmanifest", (req, res) => {
 router.get("/media/logo.png", (req, res) => {
   res.setHeader("Cache-Control", "no-cache");
   res.sendFile(logoFile());
+});
+
+router.get("/media/cover.png", (req, res) => {
+  if (!coverVersion()) return res.sendStatus(404);
+  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  res.sendFile(COVER);
 });
 
 router.get("/api/public/program", (req, res) => res.json(programInfo()));

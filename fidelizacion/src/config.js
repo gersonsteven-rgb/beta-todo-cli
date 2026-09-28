@@ -49,6 +49,11 @@ export const config = {
     wwdr: resolvePath(env.APPLE_WWDR_CERT || "certs/apple/wwdr.pem"),
     apnsHost: env.APPLE_APNS_HOST || "https://api.push.apple.com",
   },
+  // Marca del proveedor que se muestra discretamente en el panel y la tarjeta (vacío = oculto).
+  vendor: {
+    name: env.VENDOR_NAME ?? "HoraCeroIA",
+    url: env.VENDOR_URL ?? "https://horaceroia.com",
+  },
   google: {
     issuerId: env.GOOGLE_WALLET_ISSUER_ID || "",
     keyFile: resolvePath(env.GOOGLE_WALLET_KEY_FILE || "certs/google/service-account.json"),

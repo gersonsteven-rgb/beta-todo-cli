@@ -2,7 +2,7 @@
 // Cada operación queda en `transactions` y dispara la actualización de la
 // tarjeta web (SSE) y de las wallets (Apple/Google).
 import { db, tx, now } from "../db.js";
-import { getSettings, minorFactor, pointsForPurchase, formatMoney } from "../settings.js";
+import { getSettings, minorFactor, purchasePoints, formatMoney, qty, tierFor } from "../settings.js";
 import { newCardCode, newSerial, newAuthToken, normalizeEmail, normalizePhone } from "../lib/codes.js";
 import { publish } from "../lib/events.js";
 import { cardState, getCustomerById, describeTransaction, firstName } from "./cards.js";
@@ -133,28 +133,39 @@ export function registerCustomer(input, { source = "qr", userId = null, requireC
 // Registra una compra. `amount` viene en unidades mayores (ej. colones).
 export function earn(customerId, { amount, note }, userId) {
   const settings = getSettings();
-  const value = Number(amount);
-  if (settings.pointsRule.mode === "amount" && !(value > 0)) throw new LoyaltyError("Ingresá el monto de la compra.");
+  const value = Number(amount || 0);
+  const needsAmount =
+    (settings.cardType === "points" && settings.pointsRule.mode === "amount") ||
+    (settings.cardType === "stamps" && settings.stampRule.minSpend > 0);
+  if (needsAmount && !(value > 0)) throw new LoyaltyError("Ingresá el monto de la compra.");
   if (!(value >= 0) || value > 100_000_000) throw new LoyaltyError("Monto inválido.");
   const amountMinor = Math.round(value * minorFactor(settings));
-  const points = pointsForPurchase(amountMinor, settings);
 
+  let calc, tierBefore;
   const transaction = tx(() => {
-    mustGetCustomer(customerId);
-    const t = insertTx({ customerId, type: "earn", amount: amountMinor, points, note: note || null, userId });
+    const customer = mustGetCustomer(customerId);
+    tierBefore = tierFor(customer.lifetime_points, settings);
+    calc = purchasePoints(amountMinor, settings, tierBefore);
+    const t = insertTx({ customerId, type: "earn", amount: amountMinor, points: calc.total, note: note || null, userId });
     db.prepare(
       `UPDATE customers SET points = points + ?, lifetime_points = lifetime_points + ?, visits = visits + 1,
        total_spent = total_spent + ?, last_visit_at = ? WHERE id = ?`
-    ).run(points, points, amountMinor, t.created_at, customerId);
+    ).run(calc.total, calc.total, amountMinor, t.created_at, customerId);
     touch(customerId);
     return t;
   });
-  const message =
-    points > 0
-      ? `¡Sumaste ${points} ${points === 1 ? "punto" : "puntos"}!`
-      : `Compra de ${formatMoney(amountMinor, settings)} registrada`;
+  const customer = getCustomerById(customerId);
+  const tierAfter = tierFor(customer.lifetime_points, settings);
+  const tierUp = tierAfter && tierBefore && tierAfter.index > tierBefore.index ? tierAfter.name : null;
+  let message =
+    calc.total > 0
+      ? `¡Sumaste ${qty(calc.total, settings)}!`
+      : settings.cardType === "stamps"
+        ? `Compra registrada (el sello es desde ${formatMoney(settings.stampRule.minSpend * minorFactor(settings), settings)})`
+        : `Compra de ${formatMoney(amountMinor, settings)} registrada`;
+  if (tierUp) message += ` Subiste a nivel ${tierUp}.`;
   afterChange(customerId, { transaction, message });
-  return { transaction, points, customer: getCustomerById(customerId) };
+  return { transaction, points: calc.total, bonus: calc.bonus, tierUp, customer };
 }
 
 export function redeem(customerId, rewardId, userId) {
@@ -163,7 +174,7 @@ export function redeem(customerId, rewardId, userId) {
     const reward = db.prepare("SELECT * FROM rewards WHERE id = ? AND active = 1").get(rewardId);
     if (!reward) throw new LoyaltyError("Ese premio no existe o no está activo.", 404);
     if (customer.points < reward.points_cost) {
-      throw new LoyaltyError(`Le faltan ${reward.points_cost - customer.points} puntos para "${reward.name}".`);
+      throw new LoyaltyError(`Le faltan ${qty(reward.points_cost - customer.points)} para "${reward.name}".`);
     }
     const t = insertTx({ customerId, type: "redeem", points: -reward.points_cost, rewardId: reward.id, rewardName: reward.name, userId });
     db.prepare("UPDATE customers SET points = points - ? WHERE id = ?").run(reward.points_cost, customerId);
@@ -176,7 +187,7 @@ export function redeem(customerId, rewardId, userId) {
 
 export function adjust(customerId, { points, note }, userId) {
   const delta = Math.trunc(Number(points));
-  if (!delta) throw new LoyaltyError("Indicá cuántos puntos sumar o restar.");
+  if (!delta) throw new LoyaltyError("Indicá cuánto sumar o restar.");
   if (!String(note || "").trim()) throw new LoyaltyError("Indicá el motivo del ajuste.");
   const transaction = tx(() => {
     const customer = mustGetCustomer(customerId);
@@ -190,7 +201,7 @@ export function adjust(customerId, { points, note }, userId) {
     touch(customerId);
     return t;
   });
-  const message = delta > 0 ? `¡Te regalamos ${delta} puntos!` : `Se ajustaron ${Math.abs(delta)} puntos`;
+  const message = delta > 0 ? `¡Te regalamos ${qty(delta)}!` : `Se ajustaron ${qty(Math.abs(delta))}`;
   afterChange(customerId, { transaction, message });
   return { transaction, customer: getCustomerById(customerId) };
 }
@@ -205,7 +216,7 @@ export function voidTransaction(transactionId, userId) {
     const customer = mustGetCustomer(original.customer_id);
     const delta = -original.points;
     if (customer.points + delta < 0) {
-      throw new LoyaltyError("No se puede anular: el cliente ya usó esos puntos.");
+      throw new LoyaltyError("No se puede anular: el cliente ya usó ese saldo.");
     }
     const label = original.type === "earn" ? "compra" : `canje de ${original.reward_name}`;
     const t = insertTx({

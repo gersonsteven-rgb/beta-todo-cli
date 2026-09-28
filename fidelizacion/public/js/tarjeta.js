@@ -18,12 +18,16 @@ applyBrand(card.program);
 document.title = `Mi tarjeta · ${card.program.programName}`;
 $("#qr").src = `/api/public/cards/${serial}/qr.svg`;
 
+const u = () => card.units;
+const qty = (n) => plural(n, u().one, u().many);
+const short = (n) => (card.cardType === "stamps" ? qty(n) : `${n} ${u().short}`);
+
 if (params.has("nueva") || params.has("recuperada")) {
   $("#welcome").hidden = false;
   $("#welcome-title").textContent = params.has("nueva") ? `¡Bienvenido/a, ${card.firstName}!` : `¡Hola de nuevo, ${card.firstName}!`;
   $("#welcome-text").textContent =
     params.has("nueva") && card.program.welcomeBonus > 0
-      ? `Te regalamos ${plural(card.program.welcomeBonus, "punto", "puntos")}. Guardá tu tarjeta en el celular:`
+      ? `Te regalamos ${qty(card.program.welcomeBonus)}. Guardá tu tarjeta en el celular:`
       : "Esta es tu tarjeta. Guardala en el celular:";
   history.replaceState(null, "", location.pathname);
 }
@@ -45,15 +49,47 @@ function animateNumber(el, from, to) {
   el.classList.add("bump");
 }
 
+// Tarjeta de sellos: una casilla por sello; las casillas con premio llevan 🎁.
+function renderStamps(prevPoints) {
+  const st = card.stamps;
+  const el = $("#stamps");
+  el.hidden = !st;
+  $("#bar-wrap").hidden = Boolean(st);
+  if (!st) return;
+  const cols = st.goal <= 6 ? st.goal : st.goal % 5 === 0 || st.goal > 12 ? 5 : st.goal % 4 === 0 ? 4 : 6;
+  el.style.setProperty("--cols", cols);
+  const prevFilled = Math.min(prevPoints, st.goal);
+  el.innerHTML = Array.from({ length: st.goal }, (_, i) => {
+    const n = i + 1;
+    const on = n <= st.filled;
+    const gift = st.marks.includes(n);
+    const fresh = on && n > prevFilled;
+    return `<span class="stamp ${on ? "on" : ""} ${gift ? "gift" : ""} ${fresh ? "fresh" : ""}" aria-hidden="true">${on ? "✓" : gift ? "🎁" : n}</span>`;
+  }).join("");
+  el.setAttribute("aria-label", `${st.filled} de ${st.goal} sellos`);
+}
+
 function render(prevPoints = card.points) {
   const locale = card.program.locale;
+  $("#points-label").textContent = u().label;
   animateNumber($("#points"), prevPoints, card.points);
   $("#name").textContent = card.name;
-  $("#visits").textContent = card.visits;
   $("#code").textContent = card.code;
+  if (card.tier) {
+    $("#side-label").textContent = "Nivel";
+    $("#side-value").textContent = card.tier.name;
+  } else {
+    $("#side-label").textContent = "Visitas";
+    $("#side-value").textContent = card.visits;
+  }
+  const cover = card.program.coverUrl;
+  $("#cover").hidden = !cover;
+  if (cover && !$("#cover").src.endsWith(cover)) $("#cover").src = cover;
+
+  renderStamps(prevPoints);
   if (card.next) {
     $("#bar").style.width = `${Math.round(card.next.progress * 100)}%`;
-    $("#next").innerHTML = `Te faltan <b>${plural(card.next.missing, "punto", "puntos")}</b> para: ${esc(card.next.name)}`;
+    $("#next").innerHTML = `Te faltan <b>${esc(qty(card.next.missing))}</b> para: ${esc(card.next.name)}`;
   } else {
     $("#bar").style.width = "100%";
     $("#next").textContent = card.rewards.length ? "¡Tenés todos los premios desbloqueados!" : "Pronto habrá premios disponibles.";
@@ -64,11 +100,28 @@ function render(prevPoints = card.points) {
       .map(
         (r) => `<li class="reward ${r.unlocked ? "unlocked" : ""}">
           <span class="reward-badge" aria-hidden="true">${r.unlocked ? "★" : "☆"}</span>
-          <span class="main"><b>${esc(r.name)}</b><small>${r.cost} pts${r.description ? ` · ${esc(r.description)}` : ""}</small></span>
+          <span class="main"><b>${esc(r.name)}</b><small>${esc(short(r.cost))}${r.description ? ` · ${esc(r.description)}` : ""}</small></span>
           ${r.unlocked ? '<span class="tag ok">Disponible</span>' : `<span class="tag lock">Faltan ${r.missing}</span>`}
         </li>`
       )
       .join("") || '<li><p class="empty">Todavía no hay premios configurados.</p></li>';
+
+  const tiers = card.program.tiers || [];
+  $("#tiers-panel").hidden = !card.tier || tiers.length < 2;
+  if (card.tier) {
+    $("#tier-next").innerHTML = card.tier.next
+      ? `Estás en <b>${esc(card.tier.name)}</b>. Te faltan <b>${esc(qty(card.tier.next.missing))}</b> acumulados para <b>${esc(card.tier.next.name)}</b>.`
+      : `Estás en <b>${esc(card.tier.name)}</b>, el nivel más alto. ¡Gracias por tu preferencia!`;
+    $("#tiers").innerHTML = tiers
+      .map(
+        (t) => `<li class="reward ${t.name === card.tier.name ? "unlocked" : ""}">
+          <span class="reward-badge" aria-hidden="true">${t.name === card.tier.name ? "●" : "○"}</span>
+          <span class="main"><b>${esc(t.name)}</b><small>Desde ${esc(short(t.min))} acumulados</small></span>
+          ${t.bonus ? `<span class="tag ${t.name === card.tier.name ? "ok" : "lock"}">+${t.bonus}% por compra</span>` : ""}
+        </li>`
+      )
+      .join("");
+  }
 
   $("#history").innerHTML =
     card.history
@@ -82,11 +135,14 @@ function render(prevPoints = card.points) {
 
   renderPromo();
   const c = card.program.contact || {};
-  $("#foot").innerHTML = [c.address, c.hours, c.instagram, "Esta tarjeta es personal."].filter(Boolean).map(esc).join("<br>");
+  const vendor = card.program.vendor;
+  $("#foot").innerHTML =
+    [c.address, c.hours, c.instagram, "Esta tarjeta es personal."].filter(Boolean).map(esc).join("<br>") +
+    (vendor ? `<br><span class="vendor">Fidelización digital por <a href="${esc(vendor.url)}" target="_blank" rel="noopener">${esc(vendor.name)}</a></span>` : "");
 }
 
 function renderPromo() {
-  const p = card.program.promo;
+  const p = card.promo;
   $("#promo").hidden = !p;
   if (p) {
     $("#promo-title").textContent = p.title;
@@ -157,7 +213,7 @@ es.addEventListener("update", (e) => {
   render(prev);
   if (event) {
     const delta = event.points;
-    const big = delta ? `<span class="big">${delta > 0 ? "+" : ""}${delta} pts</span>` : "";
+    const big = delta ? `<span class="big">${delta > 0 ? "+" : ""}${esc(qty(delta))}</span>` : "";
     toast(toastEl, `${big}${esc(event.message)}`);
     navigator.vibrate?.(delta > 0 ? [60, 40, 60] : 80);
     const newly = card.rewards.filter((r) => r.unlocked && !unlockedBefore.has(r.id));
@@ -167,9 +223,12 @@ es.addEventListener("update", (e) => {
   }
 });
 es.addEventListener("promo", (e) => {
-  card.program.promo = JSON.parse(e.data);
+  card.promo = JSON.parse(e.data);
   renderPromo();
-  if (card.program.promo) toast(toastEl, `📣 ${esc(card.program.promo.title)}`);
+  if (card.promo) {
+    toast(toastEl, `📣 ${esc(card.promo.title)}`);
+    $("#promo").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 });
 es.addEventListener("program", () => refresh());
 es.addEventListener("deleted", () => {

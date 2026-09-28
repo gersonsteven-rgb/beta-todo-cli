@@ -42,7 +42,13 @@ export const wallet = {
     ]);
   },
 
-  async promoSent(promo) {
-    await Promise.all([apple.notifyAll().catch(logError("apple")), google.sendClassMessage(promo).catch(logError("google"))]);
+  // Campaña enviada a un grupo de clientes.
+  async campaignSent(promo, customers) {
+    await Promise.all([apple.notifyCustomers(customers).catch(logError("apple")), google.sendMessage(customers, promo).catch(logError("google"))]);
+  },
+
+  // Cambió algo en las tarjetas de un grupo (ej. se retiró una campaña).
+  async customersChanged(customers) {
+    await Promise.all([apple.notifyCustomers(customers).catch(logError("apple")), google.updateObjects(customers).catch(logError("google"))]);
   },
 };
