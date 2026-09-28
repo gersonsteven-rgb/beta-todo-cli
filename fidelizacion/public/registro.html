@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{{TITLE}} · {{BUSINESS}}</title>
+  <meta name="description" content="Registrate gratis y acumulá puntos en cada compra.">
+  <meta name="theme-color" content="{{COLOR}}">
+  <link rel="manifest" href="{{MANIFEST}}">
+  <link rel="icon" href="/media/logo.png">
+  <link rel="apple-touch-icon" href="/media/logo.png">
+  <link rel="stylesheet" href="/css/cliente.css">
+  <style>:root { --brand: {{COLOR}}; }</style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <img class="hero-logo" data-logo src="/media/logo.png" alt="">
+      <p class="eyebrow" data-bind="businessName">{{BUSINESS}}</p>
+      <h1 data-bind="programName">{{TITLE}}</h1>
+      <p class="tagline" data-bind="tagline"></p>
+    </header>
+
+    <div id="existing" class="notice" hidden>
+      <span>Ya tenés una tarjeta en este celular.</span>
+      <a id="existing-link" href="#">Ver mi tarjeta →</a>
+    </div>
+
+    <section class="perks" aria-label="Beneficios">
+      <div class="perk"><strong id="welcome-pts">Gratis</strong><span id="welcome-txt">unirte al programa</span></div>
+      <div class="perk"><strong id="rule-pts">Puntos</strong><span id="rule-txt">en cada compra</span></div>
+    </section>
+
+    <ul class="chips" id="rewards" aria-label="Premios"></ul>
+
+    <form id="form" class="panel" novalidate>
+      <h2>Creá tu tarjeta en 30 segundos</h2>
+      <label class="field">
+        <span>Nombre completo</span>
+        <input class="input" name="fullName" autocomplete="name" autocapitalize="words" placeholder="Ej. María Rodríguez Vargas" required>
+      </label>
+      <label class="field">
+        <span>Correo electrónico</span>
+        <input class="input" type="email" name="email" autocomplete="email" inputmode="email" autocapitalize="off" placeholder="nombre@correo.com" required>
+      </label>
+      <label class="field">
+        <span>Teléfono</span>
+        <div class="phone">
+          <span class="prefix" id="prefix">+506</span>
+          <input type="tel" name="phone" autocomplete="tel-national" inputmode="tel" placeholder="8888 8888" required>
+        </div>
+      </label>
+      <label class="check">
+        <input type="checkbox" name="acceptTerms" required>
+        <span>Acepto los <button type="button" class="linkbtn" id="terms-open">términos del programa y el uso de mis datos</button>.</span>
+      </label>
+      <label class="check">
+        <input type="checkbox" name="marketingOptIn">
+        <span>Quiero recibir promociones y novedades.</span>
+      </label>
+      <p class="error" id="error" role="alert" hidden></p>
+      <button class="btn primary" type="submit" id="submit">Obtener mi tarjeta</button>
+      <p class="fine">Sin costo · Tu tarjeta queda en tu celular (Apple Wallet, Google Wallet o web)</p>
+    </form>
+
+    <p class="foot" id="contact"></p>
+  </main>
+
+  <dialog id="terms">
+    <h3>Términos del programa</h3>
+    <p id="terms-text"></p>
+    <form method="dialog"><button class="btn primary">Entendido</button></form>
+  </dialog>
+
+  <script type="module" src="/js/registro.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "fidelizacion-wallet-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Demo de programa de fidelización por puntos con Apple Wallet / Google Wallet, registro por QR y panel de administrador",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch src/server.js",
+    "seed": "node --disable-warning=ExperimentalWarning scripts/seed.js",
+    "reset": "node --disable-warning=ExperimentalWarning scripts/seed.js --reset"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "jsqr": "^1.4.0",
+    "passkit-generator": "^3.6.1",
+    "qrcode": "^1.5.4"
+  }
+}

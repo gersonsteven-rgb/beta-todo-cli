@@ -1,0 +1,6 @@
+node_modules/
+# Base de datos, logo subido y secreto de sesión de cada instalación
+data/
+# Certificados de Apple Wallet y llave de Google Wallet: nunca al repositorio
+certs/
+.env

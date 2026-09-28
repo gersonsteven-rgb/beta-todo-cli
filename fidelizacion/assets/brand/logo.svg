@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 660" width="660" height="660">
+  <rect width="660" height="660" rx="150" fill="#D9481F"/>
+  <!-- papas -->
+  <g fill="#FFC23D" stroke="#B53A16" stroke-width="6">
+    <rect x="228" y="118" width="34" height="130" rx="8" transform="rotate(-12 245 183)"/>
+    <rect x="276" y="96" width="34" height="150" rx="8" transform="rotate(-4 293 171)"/>
+    <rect x="324" y="92" width="34" height="156" rx="8" transform="rotate(4 341 170)"/>
+    <rect x="372" y="104" width="34" height="144" rx="8" transform="rotate(12 389 176)"/>
+  </g>
+  <!-- camión -->
+  <g fill="#FFFFFF">
+    <path d="M150 238h260a20 20 0 0 1 20 20v130H130V258a20 20 0 0 1 20-20z"/>
+    <path d="M430 288h58c10 0 19 5 24 14l30 50c3 5 4 10 4 16v20H430z"/>
+  </g>
+  <rect x="170" y="268" width="220" height="62" rx="10" fill="#D9481F"/>
+  <path d="M452 306h40l22 38h-62z" fill="#D9481F"/>
+  <circle cx="210" cy="398" r="36" fill="#2A1A14" stroke="#FFFFFF" stroke-width="12"/>
+  <circle cx="470" cy="398" r="36" fill="#2A1A14" stroke="#FFFFFF" stroke-width="12"/>
+  <text x="330" y="530" text-anchor="middle" font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900" font-size="92" fill="#FFFFFF" letter-spacing="4">FUSION</text>
+  <text x="330" y="604" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="56" fill="#FFC23D" letter-spacing="22">TRUCK</text>
+</svg>
