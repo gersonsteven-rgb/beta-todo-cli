@@ -37,7 +37,7 @@ La matriz está en `src/settings.js` (`PLANS`). Si cambian los planes comerciale
 
 ## Instalarlo en tu computadora (lo más fácil)
 
-1. Instala **Node.js LTS** desde <https://nodejs.org> (siguiente, siguiente, finalizar). Solo la primera vez.
+1. En Windows, `iniciar-demo.bat` instala **Node.js** automáticamente si no lo tienes (con `winget`; Windows pide permiso: responde Sí). En Mac, instala Node.js LTS desde <https://nodejs.org>.
 2. Descarga el proyecto:
    - **Sin Git:** [descargar ZIP de la rama](https://github.com/gersonsteven-rgb/beta-todo-cli/archive/refs/heads/claude/festive-galileo-c963h3.zip), descomprímelo y entra a la carpeta `fidelizacion`.
    - **Con Git:** `git clone -b claude/festive-galileo-c963h3 https://github.com/gersonsteven-rgb/beta-todo-cli.git` y entra a `beta-todo-cli/fidelizacion`.
