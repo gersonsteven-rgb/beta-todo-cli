@@ -35,7 +35,38 @@ La matriz está en `src/settings.js` (`PLANS`). Si cambian los planes comerciale
 
 ---
 
-## Arranque rápido
+## Instalarlo en tu computadora (lo más fácil)
+
+1. Instala **Node.js LTS** desde <https://nodejs.org> (siguiente, siguiente, finalizar). Solo la primera vez.
+2. Descarga el proyecto:
+   - **Sin Git:** [descargar ZIP de la rama](https://github.com/gersonsteven-rgb/beta-todo-cli/archive/refs/heads/claude/festive-galileo-c963h3.zip), descomprímelo y entra a la carpeta `fidelizacion`.
+   - **Con Git:** `git clone -b claude/festive-galileo-c963h3 https://github.com/gersonsteven-rgb/beta-todo-cli.git` y entra a `beta-todo-cli/fidelizacion`.
+3. Doble clic en **`iniciar-demo.bat`** (Windows) o **`iniciar-demo.command`** (Mac). La primera vez instala todo y crea datos de ejemplo; después abre el panel en el navegador.
+4. Entra con `admin@demo.com` / `demo1234`.
+
+En Windows, la primera vez el firewall pregunta si Node.js puede usar la red: acepta en **redes privadas** para que los celulares del mismo Wi-Fi puedan registrarse.
+En Mac, si dice que no puede abrir el archivo: clic derecho → Abrir.
+
+### Probar todo en tu computadora
+
+| Qué probar | Dónde |
+|---|---|
+| Registro de un cliente | Escanea con tu celular el QR que aparece en la terminal o en **QR registro** (celular en el mismo Wi-Fi) |
+| Tarjeta en vivo | Deja la tarjeta abierta en el celular y registra una compra en **Caja**: el celular muestra "+N puntos" |
+| Escanear con cámara | En **Caja → Activar cámara** (la cámara de la laptop funciona en `localhost`) |
+| Premios, niveles, segmentos | **Premios**, **Clientes** (filtros por segmento) y **Panel** |
+| Campañas | **Campañas**: envía a un segmento. En el registro marca "Quiero recibir promociones" |
+| Plan Base / Plata, puntos / sellos, colores, logo, portada | **Ajustes** |
+| Volver a empezar | Cierra la ventana y ejecuta `npm run reset` (o `npm run reset -- --sellos`) |
+
+### Hacer mejoras
+
+- Abre la carpeta `fidelizacion` en VS Code y usa `npm run dev`: el servidor se reinicia solo al guardar.
+- Pantallas del cliente: `public/registro.html`, `public/tarjeta.html`, `public/js/`, `public/css/cliente.css`.
+- Panel: `public/admin/admin.js` y `public/admin/admin.css` (recarga el navegador para ver los cambios).
+- Reglas de negocio: `src/services/loyalty.js` (puntos y canjes), `src/services/segments.js`, `src/settings.js` (planes y valores por defecto).
+
+## Arranque rápido (terminal)
 
 Requisitos: **Node.js 22.13 o superior** (se recomienda Node 24 LTS). No necesita base de datos externa ni compilar nada.
 
@@ -296,6 +327,8 @@ fidelizacion/
 │   └── admin/               # panel (HTML + JS sin build)
 ├── assets/                  # logo por defecto e íconos del pase
 ├── scripts/seed.js          # datos de ejemplo
+├── iniciar-demo.bat         # doble clic en Windows
+├── iniciar-demo.command     # doble clic en Mac
 └── .env.example
 ```
 
