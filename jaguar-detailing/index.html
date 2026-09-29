@@ -86,12 +86,11 @@ ul,ol{margin:0;padding:0;list-style:none}
 .intro__stage{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:clamp(18px,3vh,30px);padding-inline:var(--gutter)}
 .intro__glow{position:absolute;left:50%;top:46%;width:min(90vw,900px);aspect-ratio:2/1;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(214,166,81,.22),rgba(214,166,81,.06) 55%,transparent);opacity:0;pointer-events:none}
 .intro__mark{position:relative;width:min(78vw,640px);aspect-ratio:1680/615;transform-origin:0 0}
-.intro__mark svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;transform-origin:50% 91%;will-change:transform}
-.intro__ghost{opacity:0;filter:blur(1.5px)}
-.intro__strokes path{fill:none;stroke:var(--gold-hi);stroke-width:1.1;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:1;stroke-linecap:round}
+.intro__mark svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.intro__scene{position:absolute;inset:0;width:100%;height:100%}
 .intro__line{width:min(70vw,560px);height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0)}
 .intro__word{font:500 clamp(18px,3vw,30px)/1 var(--f-brand);letter-spacing:.34em;color:var(--pearl);display:flex;overflow:hidden;padding-bottom:4px;margin-right:-.34em}
-.intro__word .ch{display:inline-block;transform:translateY(110%)}
+.intro__word .ch{display:inline-block;transform:translateY(140%)}
 .intro__tag{display:flex;align-items:center;gap:16px;font:500 11px/1 var(--f-brand);letter-spacing:.5em;color:var(--gold);opacity:0;margin-right:-.5em}
 .intro__tag i{width:44px;height:1px;background:currentColor;opacity:.6}
 .intro__skip{position:absolute;right:var(--gutter);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:none;border:0;color:var(--smoke);font:500 11px/1 var(--f-display);letter-spacing:.24em;text-transform:uppercase;padding:10px 0;cursor:pointer}
@@ -393,16 +392,13 @@ ul,ol{margin:0;padding:0;list-style:none}
 <div class="intro" id="intro">
   <div class="intro__half intro__half--top" aria-hidden="true"></div>
   <div class="intro__half intro__half--bottom" aria-hidden="true"></div>
+  <canvas class="intro__scene" id="introScene" aria-hidden="true"></canvas>
   <div class="intro__stage" aria-hidden="true">
     <div class="intro__glow"></div>
     <div class="intro__mark" id="introMark">
-      <svg viewBox="0 0 1680 615" class="intro__ghost"><use href="#jag" fill="#d6a651"/></svg>
-      <svg viewBox="0 0 1680 615" class="intro__ghost"><use href="#jag" fill="#d6a651"/></svg>
-      <svg viewBox="0 0 1680 615" class="intro__ghost"><use href="#jag" fill="#d6a651"/></svg>
       <svg viewBox="0 0 1680 615" id="introSvg">
         <use href="#jag" class="intro__fill" fill="url(#goldFill)" opacity="0"/>
         <g clip-path="url(#jagClip)"><rect class="intro__shine" x="-520" y="0" width="420" height="615" fill="url(#shineGrad)" transform="skewX(-18)"/></g>
-        <g class="intro__strokes"></g>
       </svg>
     </div>
     <div class="intro__line"></div>
@@ -769,7 +765,6 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine = matchMedia('(pointer: fine)').matches;
 const WA = '50672384351';
 const waHref = msg => `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
-const NS = 'http://www.w3.org/2000/svg';
 
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
@@ -802,6 +797,367 @@ function setMenu(open) {
 toggle.addEventListener('click', () => setMenu(menu.hidden));
 addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) setMenu(false); });
 
+/* ---------- Intro scene: the jaguar walks, crouches and leaps into the logo pose (canvas) ---------- */
+function createJaguarScene(cv, d, getMark) {
+  const ctx = cv.getContext('2d');
+  const mkc = () => document.createElement('canvas');
+  const fig = mkc(), fx = fig.getContext('2d');
+  const refl = mkc(), rx = refl.getContext('2d');
+  const TAU = Math.PI * 2, DEG = Math.PI / 180;
+  const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const mix = (a, b, t) => a + (b - a) * t;
+  const sstep = (a, b, v) => { const t = cl((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+  const eIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const eOut = t => 1 - Math.pow(1 - t, 3);
+  const P = (x, y) => ({ x, y });
+  const add = (a, b) => P(a.x + b.x, a.y + b.y);
+  const sub = (a, b) => P(a.x - b.x, a.y - b.y);
+  const mul = (a, k) => P(a.x * k, a.y * k);
+  const len = a => Math.hypot(a.x, a.y);
+  const lerpP = (a, b, t) => P(mix(a.x, b.x, t), mix(a.y, b.y, t));
+  const dirA = a => P(Math.cos(a), Math.sin(a));
+  const angOf = a => Math.atan2(a.y, a.x);
+  const lerpAng = (a, b, t) => { let dd = (b - a) % TAU; if (dd > Math.PI) dd -= TAU; if (dd < -Math.PI) dd += TAU; return a + dd * t; };
+  const apply = (m, p) => P(m.a * p.x + m.c * p.y + m.e, m.b * p.x + m.d * p.y + m.f);
+
+  /* Logo geometry, in the logo's own units (viewBox 0 0 1680 615) */
+  const BB = { x: 32, y: 34, w: 1617, h: 552 };             // bounding box of the silhouette
+  const Bm = new DOMMatrix([BB.w, 0, 0, BB.h, BB.x, BB.y]);   // bbox units -> logo units
+  const Binv = Bm.inverse();
+  const inBB = (p, m) => { const q = new Path2D(); q.addPath(p, m || Binv); return q; };
+  const poly = pts => { const p = new Path2D(); for (let i = 0; i < pts.length; i += 2) i ? p.lineTo(pts[i], pts[i + 1]) : p.moveTo(pts[i], pts[i + 1]); p.closePath(); return p; };
+  const JAG = inBB(new Path2D(d));
+  const SIL = inBB(new Path2D(d.split(/(?=M)/)[0]));
+  // body without the legs (the legs are rebuilt as a rig), minus the far-leg sliver
+  const keep = poly([0, 0, 1680, 0, 1680, 302, 1545, 302, 1462, 258, 1335, 258, 1300, 276, 1262, 306, 1195, 340, 1125, 348, 1000, 324, 900, 316, 830, 302, 745, 298, 700, 312, 650, 318, 600, 298, 560, 285, 520, 290, 450, 305, 380, 335, 300, 362, 200, 385, 100, 400, 0, 410]);
+  keep.addPath(poly([1306, 256, 1326, 214, 1436, 186, 1452, 198, 1404, 238, 1340, 262]));
+  const KEEP = inBB(keep);
+  const REG = {
+    tail: inBB(poly([-50, -50, 592, -50, 592, 700, -50, 700])),
+    body: inBB(poly([560, -50, 1382, -50, 1382, 700, 560, 700])),
+    head: inBB(poly([1348, -50, 1760, -50, 1760, 700, 1348, 700]))
+  };
+  const PIVOT = P(900, 250), TAIL_ROOT = P(578, 232), NECK = P(1362, 105);
+  const GROUND = 632;                                          // walking ground line, logo units
+  // rig: near legs face the viewer, far legs sit behind the body
+  const LEGS = [
+    { id: 'hindF', hind: true, far: true, root: P(668, 250), phase: 0, dx: 12 },
+    { id: 'foreF', hind: false, far: true, root: P(1192, 250), phase: .25, dx: 40 },
+    { id: 'hindN', hind: true, far: false, root: P(630, 262), phase: .5, dx: 18 },
+    { id: 'foreN', hind: false, far: false, root: P(1226, 262), phase: .75, dx: 46 }
+  ];
+  const HIND = { L: [192, 176, 136, 55], W: [186, 88, 46, 48, 36], bulge: [[22, 34], [8, 18], [0, 0]] };
+  const FORE = { L: [152, 182, 58, 55], W: [150, 84, 50, 50, 36], bulge: [[18, 20], [14, 8], [0, 0]] };
+  const TUCK = { foreN: P(1262, 438), foreF: P(1222, 424) };
+  // leap end pose (logo pose): ball and toe of each paw, logo units
+  const EXT = {
+    hindN: [P(228, 548), P(182, 572)], hindF: [P(310, 520), P(262, 540)],
+    foreN: [P(1496, 440), P(1552, 452)], foreF: [P(1440, 402), P(1494, 414)]
+  };
+  // spots on the legs: [segment, along, across, rx, ry] in logo units
+  const SPOTS = {
+    hind: [[0, .35, .18, 22, 14], [0, .55, -.2, 18, 12], [0, .72, .12, 16, 11], [0, .2, -.22, 15, 10], [1, .3, .05, 11, 7], [1, .62, -.1, 9, 6]],
+    fore: [[0, .45, .1, 16, 11], [0, .7, -.15, 13, 9], [1, .25, .08, 10, 7], [1, .55, -.1, 9, 6], [1, .8, .05, 7, 5]]
+  };
+
+  /* Timeline (seconds) */
+  const CYCLE = .95, DUTY = .62, STRIDE = 620;
+  const T_WALK = CYCLE * 2, T_CROUCH = .32, T_LEAP = .72;
+  const T0_LEAP = T_WALK + T_CROUCH, T_FREEZE = T0_LEAP + T_LEAP;
+
+  let W = 1, H = 1, dpr = 1, L = null;
+  const motes = [];
+  function layout() {
+    const r = getMark();
+    const sf = r.width / 1680;
+    const sw = sf * (W < 720 ? .72 : .7);
+    const floorY = r.top + r.height + Math.max(10, H * .03);
+    const pf = P(r.left + PIVOT.x * sf, r.top + PIVOT.y * sf);
+    const xEnd = pf.x - Math.max(W * .14, 70);
+    const v = STRIDE * sw / CYCLE;
+    const xStart = xEnd - v * T_WALK;
+    L = { r, sf, sw, floorY, pf, xStart, v, yWalk: floorY - (GROUND - PIVOT.y) * sw };
+  }
+  function resize() {
+    const b = cv.getBoundingClientRect();
+    W = Math.max(1, b.width); H = Math.max(1, b.height);
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    [cv, fig, refl].forEach(c => { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); });
+    layout();
+    motes.length = 0;
+    let s = 7;
+    const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+    for (let i = 0; i < 80; i++) motes.push({ x: rnd() * W, y: rnd() * H, z: .35 + rnd() * 1.5, r: .4 + rnd() * 1.4, vy: 6 + rnd() * 16, ph: rnd() * TAU });
+  }
+
+  /* Body pose at time t: pivot (scene px), rotation, scale, tail and head angles */
+  function bodyPose(t) {
+    const { sw, xStart, v, yWalk, pf, sf } = L;
+    const w = t / CYCLE;
+    if (t <= T_WALK) {
+      return { x: xStart + v * t, y: yWalk + 5 * sw * Math.cos(w * TAU * 2), rot: (7 + .8 * Math.sin(w * TAU)) * DEG, sc: sw,
+        tail: 4 * Math.sin(w * TAU + 1) * DEG, head: 1.4 * Math.sin(w * TAU * 2 + .6) * DEG };
+    }
+    const end = { x: xStart + v * T_WALK, y: yWalk + 5 * sw, rot: 7 * DEG };
+    if (t <= T0_LEAP) {
+      const q = eIO((t - T_WALK) / T_CROUCH);
+      return { x: end.x + v * T_CROUCH * .35 * eOut((t - T_WALK) / T_CROUCH), y: end.y + 40 * sw * q, rot: mix(end.rot, 10 * DEG, q), sc: sw,
+        tail: mix(4 * Math.sin(2 * TAU + 1), 10, q) * DEG, head: mix(0, -2, q) * DEG };
+    }
+    const u = cl((t - T0_LEAP) / T_LEAP);
+    const c = { x: end.x + v * T_CROUCH * .35, y: end.y + 40 * sw, rot: 10 * DEG };
+    const rot = u < .24 ? mix(c.rot, -8 * DEG, eOut(u / .24)) : mix(-8 * DEG, 0, eIO((u - .24) / .76));
+    return { x: mix(c.x, pf.x, 1 - Math.pow(1 - u, 1.7)), y: mix(c.y, pf.y, 1 - Math.pow(1 - u, 2.2)), rot, sc: mix(sw, sf, 1 - Math.pow(1 - u, 2)),
+      tail: mix(10, 0, eOut(u)) * DEG, head: mix(-2, 0, eOut(u)) * DEG, u };
+  }
+  const bodyMatrix = b => new DOMMatrix().translate(b.x, b.y).rotate(b.rot / DEG).scale(b.sc).translate(-PIVOT.x, -PIVOT.y);
+  const around = (m, p, a) => m.translate(p.x, p.y).rotate(a / DEG).translate(-p.x, -p.y);
+
+  /* Where each paw is during the walk (scene px): stance keeps it planted, swing arcs it forward */
+  function walkFoot(leg, t) {
+    const { sw, xStart, v, floorY } = L;
+    const S = STRIDE * sw;
+    const ref = xStart + v * t + (leg.root.x - PIVOT.x) * sw * Math.cos(7 * DEG) + leg.dx * sw;
+    const c = ((t / CYCLE - leg.phase) % 1 + 1) % 1;
+    if (c < DUTY) return { p: P(ref + S * (DUTY / 2 - c), floorY), swing: 0, stance: c / DUTY };
+    const s = (c - DUTY) / (1 - DUTY);
+    const lift = (leg.hind ? 50 : 66) * sw * Math.pow(Math.sin(Math.PI * s), .85);
+    return { p: P(ref - S * (c - DUTY) - DUTY * S / 2 + S * eIO(s), floorY - lift), swing: s, stance: 1 };
+  }
+  // paw orientation: ball->hock (hind) or ball->wrist (fore) direction, and toe direction
+  function walkAngles(leg, f) {
+    if (f.swing > 0) {
+      const s = f.swing;
+      const m = leg.hind ? (s < .5 ? mix(-135, -62, eIO(s * 2)) : mix(-62, -100, eIO((s - .5) * 2))) : (s < .5 ? mix(-118, -38, eIO(s * 2)) : mix(-38, -96, eIO((s - .5) * 2)));
+      const toe = leg.hind ? 50 * Math.sin(Math.PI * s) : 72 * Math.sin(Math.PI * Math.min(1, s * 1.15));
+      return { meta: m * DEG, toe: toe * DEG };
+    }
+    const m = leg.hind ? mix(-100, -135, f.stance) : mix(-96, -118, f.stance);
+    return { meta: m * DEG, toe: 0 };
+  }
+
+  function legState(leg, t, b, M) {
+    const rootS = apply(M, leg.root);
+    const sc = b.sc;
+    if (t <= T_WALK) { const f = walkFoot(leg, t); return { root: rootS, ball: f.p, ...walkAngles(leg, f), sc }; }
+    const f0 = walkFoot(leg, T_WALK), a0 = walkAngles(leg, f0);
+    const { floorY, sw } = L;
+    const cb = bodyPose(T0_LEAP), cM = bodyMatrix(cb);
+    const crouchX = apply(cM, leg.root).x + (leg.hind ? 8 : 58) * sw;
+    const crouchBall = P(crouchX, floorY);
+    const crouchA = { meta: (leg.hind ? -128 : -104) * DEG, toe: 0 };
+    if (t <= T0_LEAP) {
+      const q = eIO((t - T_WALK) / T_CROUCH);
+      const lift = Math.sin(Math.PI * q) * Math.min(40 * sw, Math.abs(crouchBall.x - f0.p.x) * .45);
+      const ball = P(mix(f0.p.x, crouchBall.x, q), mix(f0.p.y, floorY, q) - lift);
+      return { root: rootS, ball, meta: lerpAng(a0.meta, crouchA.meta, q), toe: mix(a0.toe, 0, q), sc };
+    }
+    const u = cl((t - T0_LEAP) / T_LEAP);
+    const [eb, et] = EXT[leg.id];
+    const extBall = apply(M, eb), extToe = apply(M, et);
+    const extToeA = angOf(sub(extToe, extBall));
+    if (leg.hind) { // push off the floor, then trail back into the logo pose
+      const k = eIO(cl((u - .24) / .6));
+      const ball = lerpP(crouchBall, extBall, k);
+      return { root: rootS, ball, meta: lerpAng(crouchA.meta, angOf(sub(rootS, ball)), k), toe: lerpAng(0, extToeA, k), sc, toeLen: mix(HIND.L[3] * sc, len(sub(extToe, extBall)), k) };
+    }
+    const tuck = apply(M, TUCK[leg.id]);
+    if (u < .32) { // fold the fore paws up under the chest
+      const k = eIO(u / .32);
+      const ball = lerpP(crouchBall, tuck, k);
+      return { root: rootS, ball, meta: lerpAng(crouchA.meta, angOf(sub(rootS, ball)) - 70 * DEG, k), toe: lerpAng(0, 95 * DEG, k), sc };
+    }
+    const k = eIO(cl((u - .32) / .5)); // then reach forward
+    const ball = lerpP(tuck, extBall, k);
+    const tuckMeta = angOf(sub(rootS, tuck)) - 70 * DEG;
+    return { root: rootS, ball, meta: lerpAng(tuckMeta, angOf(sub(rootS, ball)), k), toe: lerpAng(95 * DEG, extToeA, k), sc, toeLen: mix(FORE.L[3] * sc, len(sub(extToe, extBall)), k) };
+  }
+
+  // two-bone IK: returns the middle joint; bend = +1 knee forward, -1 elbow back
+  function ik(a, c, l1, l2, bend) {
+    const v = sub(c, a); let dd = len(v);
+    const reach = l1 + l2 - .01;
+    if (dd > reach) { c = add(a, mul(v, reach / dd)); dd = reach; }
+    dd = Math.max(dd, Math.abs(l1 - l2) + .01);
+    const cosA = cl((l1 * l1 + dd * dd - l2 * l2) / (2 * l1 * dd), -1, 1);
+    const ang = angOf(v) - bend * Math.acos(cosA);
+    return { mid: add(a, mul(dirA(ang), l1)), end: c };
+  }
+  function legJoints(leg, s) {
+    const G = leg.hind ? HIND : FORE, k = s.sc;
+    let upper = add(s.ball, mul(dirA(s.meta), G.L[2] * k));
+    const r = ik(s.root, upper, G.L[0] * k, G.L[1] * k, leg.hind ? 1 : -1);
+    const ball = add(s.ball, sub(r.end, upper));
+    const toe = add(ball, mul(dirA(s.toe), (s.toeLen || G.L[3] * k)));
+    return [s.root, r.mid, r.end, ball, toe];
+  }
+  function legPath(leg, pts, k) {
+    const G = leg.hind ? HIND : FORE, p = new Path2D();
+    const circle = (c, r) => { p.moveTo(c.x + r, c.y); p.arc(c.x, c.y, r, 0, TAU); };
+    for (let i = 0; i < 3; i++) {
+      const A = pts[i], B = pts[i + 1], wa = G.W[i] * k / 2, wb = G.W[i + 1] * k / 2;
+      const dd = sub(B, A), l = len(dd) || 1, u = mul(dd, 1 / l), n = P(-u.y, u.x);
+      const [bf, bb] = G.bulge[i];
+      const front = n.x > 0 ? 1 : -1; // which normal side faces forward
+      const bl = (front > 0 ? bf : bb) * k, br = (front > 0 ? bb : bf) * k;
+      const Al = add(A, mul(n, wa)), Bl = add(B, mul(n, wb)), Ar = sub(A, mul(n, wa)), Br = sub(B, mul(n, wb));
+      const cl1 = add(lerpP(Al, Bl, .45), mul(n, bl)), cr1 = sub(lerpP(Ar, Br, .45), mul(n, br));
+      p.moveTo(Al.x, Al.y); p.quadraticCurveTo(cl1.x, cl1.y, Bl.x, Bl.y); p.lineTo(Br.x, Br.y); p.quadraticCurveTo(cr1.x, cr1.y, Ar.x, Ar.y); p.closePath();
+      circle(A, wa); circle(B, wb);
+    }
+    // hock point / elbow point
+    const j = pts[leg.hind ? 2 : 1], prev = pts[leg.hind ? 1 : 0], next = pts[leg.hind ? 3 : 2];
+    const back = mul(add(sub(j, prev), sub(j, next)), 1);
+    const bl = len(back) || 1;
+    const bump = add(j, mul(back, (leg.hind ? 12 : 10) * k / bl));
+    circle(bump, (leg.hind ? 15 : 20) * k);
+    // paw
+    const ball = pts[3], toe = pts[4], mid = lerpP(ball, toe, .42), a = angOf(sub(toe, ball));
+    p.moveTo(mid.x, mid.y);
+    p.ellipse(mid.x, mid.y, len(sub(toe, ball)) / 2 + G.W[3] * k * .38, G.W[3] * k * .5, a, 0, TAU);
+    return p;
+  }
+  function spotEllipses(leg, pts, k, c) {
+    (leg.hind ? SPOTS.hind : SPOTS.fore).forEach(([seg, al, ac, sx, sy]) => {
+      const G = leg.hind ? HIND : FORE;
+      const A = pts[seg], B = pts[seg + 1], u = sub(B, A), l = len(u) || 1, n = P(-u.y / l, u.x / l);
+      const w = mix(G.W[seg], G.W[seg + 1], al) * k;
+      const c0 = add(lerpP(A, B, al), mul(n, ac * w));
+      c.beginPath(); c.ellipse(c0.x, c0.y, sx * k, sy * k, angOf(u), 0, TAU); c.fill();
+    });
+  }
+
+  let GOLD = null;
+  function gold(c) {
+    const g = c.createLinearGradient(0, 0, 1, 1);
+    [[0, '#8c611f'], [.32, '#d6a651'], [.52, '#f6e0a4'], [.72, '#c9953a'], [1, '#7c541a']].forEach(([o, col]) => g.addColorStop(o, col));
+    return g;
+  }
+  const SPOT = '#0b0804';
+
+  function drawFigure(t, cam) {
+    const b = bodyPose(t);
+    const M = bodyMatrix(b);
+    const u = b.u === undefined ? 0 : b.u;
+    const kLogo = t >= T_FREEZE ? 1 : sstep(.9, .975, u);
+    const rigA = 1 - kLogo;
+    fx.setTransform(1, 0, 0, 1, 0, 0);
+    fx.clearRect(0, 0, fig.width, fig.height);
+    if (!GOLD) GOLD = gold(fx);
+    const MB = M.multiply(Bm), MBinv = MB.inverse();
+    const legs = LEGS.map(leg => { const s = legState(leg, Math.min(t, T_FREEZE), b, M); const pts = legJoints(leg, s); return { leg, pts, path: legPath(leg, pts, s.sc), k: s.sc }; });
+    const fill = (path, alpha, dark) => {
+      if (alpha <= 0) return;
+      fx.save(); fx.globalAlpha = alpha;
+      fx.setTransform(cam.multiply(MB)); fx.fillStyle = GOLD; fx.fill(inBB(path, MBinv));
+      if (dark) { fx.setTransform(cam); fx.fillStyle = dark; fx.fill(path); }
+      fx.restore();
+    };
+    const spots = (l, alpha, col) => { if (alpha <= 0) return; fx.save(); fx.globalAlpha = alpha; fx.setTransform(cam); fx.fillStyle = col; spotEllipses(l.leg, l.pts, l.k, fx); fx.restore(); };
+    // far legs, shaded as they sit away from the light
+    const farA = rigA * (1 - sstep(.5, .8, u));
+    legs.filter(l => l.leg.far).forEach(l => { fill(l.path, farA, 'rgba(34,20,5,.58)'); spots(l, farA, 'rgba(8,5,2,.85)'); });
+    legs.filter(l => !l.leg.far).forEach(l => { fill(l.path, rigA); spots(l, rigA, SPOT); });
+    // body pieces on top, so the legs emerge from under the coat; tail and head swing on their joints
+    const pieces = [[around(M, TAIL_ROOT, b.tail), REG.tail], [M, REG.body], [around(M, NECK, b.head), REG.head]];
+    pieces.forEach(([m, reg]) => {
+      fx.save(); fx.setTransform(cam.multiply(m).multiply(Bm));
+      fx.clip(KEEP, 'evenodd'); fx.clip(reg);
+      fx.fillStyle = SPOT; fx.globalAlpha = rigA; fx.fill(SIL);
+      fx.globalAlpha = 1; fx.fillStyle = GOLD; fx.fill(JAG, 'evenodd');
+      fx.restore();
+    });
+    if (kLogo > 0) { fx.save(); fx.globalAlpha = kLogo; fx.setTransform(cam.multiply(MB)); fx.fillStyle = GOLD; fx.fill(JAG, 'evenodd'); fx.restore(); }
+    // studio light: top-lit volume and a sheen that travels across the coat
+    const lit = 1 - sstep(.7, 1, u) * (t > T_WALK ? 1 : 0);
+    if (lit > 0) {
+      fx.save(); fx.globalCompositeOperation = 'source-atop'; fx.setTransform(cam); fx.globalAlpha = lit;
+      const top = apply(M, P(900, 30)).y, bot = L.floorY;
+      const g = fx.createLinearGradient(0, top, 0, bot);
+      g.addColorStop(0, 'rgba(255,242,214,.13)'); g.addColorStop(.42, 'rgba(255,242,214,0)'); g.addColorStop(.62, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.5)');
+      fx.fillStyle = g; fx.fillRect(-W, top - 10, W * 3, bot - top + 20);
+      const sx = mix(-W * .2, W * 1.1, (t / 2.4) % 1), band = W * .12;
+      const s2 = fx.createLinearGradient(sx, 0, sx + band, band * .5);
+      s2.addColorStop(0, 'rgba(255,246,226,0)'); s2.addColorStop(.5, 'rgba(255,246,226,.3)'); s2.addColorStop(1, 'rgba(255,246,226,0)');
+      fx.fillStyle = s2; fx.fillRect(-W, 0, W * 3, H);
+      fx.restore();
+    }
+    return { b, M, legs };
+  }
+
+  function render(t, opts = {}) {
+    if (!L) return;
+    const showFigure = opts.figure !== false;
+    const e = eIO(cl(t / T_FREEZE));
+    const b0 = bodyPose(Math.min(t, T_FREEZE));
+    const zoom = mix(1.06, 1, e), pan = (W / 2 - b0.x) * .06 * (1 - e);
+    const cam = new DOMMatrix().scale(dpr).translate(W / 2, H / 2).scale(zoom).translate(-W / 2 + pan, -H / 2);
+    const fade = eOut(cl(t / .7));
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.globalAlpha = fade;
+    ctx.setTransform(cam);
+    const { floorY } = L;
+    // overhead light and the showroom floor
+    let g = ctx.createRadialGradient(W / 2, -H * .15, 0, W / 2, -H * .15, H * 1.1);
+    g.addColorStop(0, 'rgba(214,166,81,.10)'); g.addColorStop(.6, 'rgba(214,166,81,.025)'); g.addColorStop(1, 'rgba(214,166,81,0)');
+    ctx.fillStyle = g; ctx.fillRect(-W, -H, W * 3, H * 3);
+    g = ctx.createLinearGradient(0, floorY, 0, floorY + H * .5);
+    g.addColorStop(0, 'rgba(214,166,81,.07)'); g.addColorStop(1, 'rgba(214,166,81,0)');
+    ctx.fillStyle = g; ctx.fillRect(-W, floorY, W * 3, H);
+    ctx.save(); ctx.translate(W / 2, floorY + 6); ctx.scale(1, .12);
+    g = ctx.createRadialGradient(0, 0, 0, 0, 0, W * .42);
+    g.addColorStop(0, 'rgba(246,224,164,.16)'); g.addColorStop(1, 'rgba(246,224,164,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, W * .42, 0, TAU); ctx.fill(); ctx.restore();
+    g = ctx.createLinearGradient(-W * .1, 0, W * 1.1, 0);
+    g.addColorStop(0, 'rgba(214,166,81,0)'); g.addColorStop(.5, 'rgba(246,224,164,.38)'); g.addColorStop(1, 'rgba(214,166,81,0)');
+    ctx.fillStyle = g; ctx.fillRect(-W * .1, floorY, W * 1.2, 1);
+    // dust in the light, at several depths
+    const par = (b0.x - W / 2) * .03;
+    motes.forEach(m => {
+      if (m.z > 1.45) return;
+      const y = ((m.y - m.vy * m.z * t) % H + H) % H, x = m.x + Math.sin(t * .6 + m.ph) * 6 - par * (m.z - 1);
+      ctx.globalAlpha = fade * (.12 + .3 * (m.z - .35)) * (.6 + .4 * Math.sin(t * 2 + m.ph));
+      ctx.fillStyle = '#f6e0a4'; ctx.beginPath(); ctx.arc(x, y, m.r * m.z, 0, TAU); ctx.fill();
+    });
+    ctx.globalAlpha = fade;
+    if (showFigure || opts.reflection) {
+      const F = drawFigure(Math.min(t, T_FREEZE), cam);
+      // contact shadow, fading as the cat leaves the floor
+      const air = cl((floorY - (F.b.y + (GROUND - PIVOT.y) * F.b.sc)) / (H * .25));
+      ctx.save(); ctx.translate(F.b.x, floorY + 2); ctx.scale(1, .08);
+      g = ctx.createRadialGradient(0, 0, 0, 0, 0, 560 * F.b.sc);
+      g.addColorStop(0, `rgba(0,0,0,${.75 * (1 - air)})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 560 * F.b.sc, 0, TAU); ctx.fill(); ctx.restore();
+      // glossy floor reflection
+      const floorDev = cam.transformPoint(new DOMPoint(0, floorY)).y;
+      rx.setTransform(1, 0, 0, 1, 0, 0); rx.clearRect(0, 0, refl.width, refl.height);
+      rx.save(); rx.translate(0, floorDev * 2); rx.scale(1, -1); rx.drawImage(fig, 0, 0); rx.restore();
+      rx.globalCompositeOperation = 'destination-in';
+      const rg = rx.createLinearGradient(0, floorDev, 0, floorDev + H * .2 * dpr);
+      rg.addColorStop(0, 'rgba(0,0,0,.42)'); rg.addColorStop(1, 'rgba(0,0,0,0)');
+      rx.fillStyle = rg; rx.fillRect(0, floorDev, refl.width, refl.height);
+      rx.globalCompositeOperation = 'source-over';
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalAlpha = fade * (opts.reflectionAlpha ?? 1);
+      ctx.drawImage(refl, 0, 0);
+      if (showFigure) { ctx.globalAlpha = fade; ctx.drawImage(fig, 0, 0); }
+      ctx.setTransform(cam);
+    }
+    // out-of-focus motes in front of the lens
+    motes.forEach(m => {
+      if (m.z <= 1.45) return;
+      const y = ((m.y - m.vy * m.z * t * .6) % H + H) % H, x = m.x - par * 2 * (m.z - 1);
+      const r = 6 + m.r * 7;
+      const gg = ctx.createRadialGradient(x, y, 0, x, y, r);
+      gg.addColorStop(0, 'rgba(246,224,164,.10)'); gg.addColorStop(1, 'rgba(246,224,164,0)');
+      ctx.globalAlpha = fade; ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  }
+  return { resize, render, T_FREEZE, layout: () => L };
+}
+
 /* ---------- Intro ---------- */
 const intro = $('#intro');
 let introDone = false;
@@ -809,18 +1165,6 @@ function ready() {
   root.classList.add('is-ready');
   root.classList.remove('is-locked');
   if (lenis) lenis.start();
-}
-function buildStrokes() {
-  const d = $('#jag').getAttribute('d');
-  const g = $('.intro__strokes');
-  return d.split(/(?=M)/).map(s => s.trim()).filter(Boolean).map(s => {
-    const p = document.createElementNS(NS, 'path');
-    p.setAttribute('d', s); p.setAttribute('pathLength', '1');
-    g.appendChild(p);
-    let len = 0, x = 0;
-    try { len = p.getTotalLength(); x = p.getBBox().x; } catch (e) {}
-    return { p, len, x };
-  });
 }
 function runIntro() {
   if (!intro) { ready(); return; }
@@ -833,12 +1177,14 @@ function runIntro() {
   word.innerHTML = [...word.textContent].map(ch => `<span class="ch">${ch === ' ' ? '&nbsp;' : ch}</span>`).join('');
   const letters = $$('.ch', word);
   const fill = $('.intro__fill'), shine = $('.intro__shine'), svg = $('#introSvg');
-  const line = $('.intro__line'), tag = $('.intro__tag'), glow = $('.intro__glow'), strokesG = $('.intro__strokes');
+  const line = $('.intro__line'), tag = $('.intro__tag'), glow = $('.intro__glow');
+  const mark = $('#introMark'), sceneCv = $('#introScene');
   const anims = [];
   const A = (el, kf, o) => { const a = el.animate(kf, Object.assign({ fill: 'both', easing: 'cubic-bezier(.16,1,.3,1)' }, o)); anims.push(a); return a; };
+  fill.setAttribute('opacity', '1');
 
   if (reduce) {
-    fill.setAttribute('opacity', '1');
+    sceneCv.remove();
     [line, tag].forEach(el => el.style.cssText = 'opacity:1;transform:none');
     letters.forEach(l => l.style.transform = 'none');
     setTimeout(() => {
@@ -848,101 +1194,56 @@ function runIntro() {
     return;
   }
 
+  // the jaguar walks in, crouches and leaps; at the top of the leap it freezes in the logo pose
   $('#navJag').style.opacity = '0';
-  const strokes = buildStrokes();
-  const maxLen = Math.max(...strokes.map(s => s.len));
-  const mark = $('#introMark'), stage = $('.intro__stage'), ghosts = $$('.intro__ghost');
+  let scene = null;
+  try { scene = createJaguarScene(sceneCv, $('#jag').getAttribute('d'), () => mark.getBoundingClientRect()); scene.resize(); } catch (e) { scene = null; sceneCv.remove(); }
+  const T_FREEZE = scene ? scene.T_FREEZE : 0;
+  svg.style.opacity = scene ? '0' : '1';
+  const onResize = () => scene && scene.resize();
+  addEventListener('resize', onResize);
 
-  // Choreography (ms): prowl on the left, crouch, leap in an arc, land centred in the logo pose.
-  const D0 = 150, T_CROUCH = 1050, T_JUMP = 1400, T_LAND = 2250, T_END = 2750, TT = 3000;
-  const vw = innerWidth, vh = innerHeight, mw = mark.offsetWidth, mh = mark.offsetHeight;
-  const gutter = clamp(vw * 0.042, 16, 64);
-  const s0 = vw < 720 ? 0.56 : 0.6;
-  const x0 = -vw / 2 + gutter + mw * s0 / 2;
-  const y0 = Math.min(vh * 0.1, 90);
-  const creep = mw * s0 * 0.05;
-  const peak = Math.min(vh * 0.2, 170, Math.abs(x0) * 0.75 + 40);
-  const easeIO = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-  const jump = u => { const k = 0.7 * u + 0.3 * easeIO(u); return { k, x: lerp(x0 + creep * 0.8, 0, k), y: lerp(y0, 0, k) - peak * 4 * k * (1 - k) }; };
-  const heading = u => { const a = jump(Math.max(0, u - 0.02)), b = jump(Math.min(1, u + 0.02)); return clamp(Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI * 0.55, -14, 12); };
-  const rLand = heading(1);
-  function pose(t) {
-    if (t < T_CROUCH) { // two soft steps forward
-      const p = t / T_CROUCH, step = Math.sin(p * Math.PI * 2);
-      return { x: x0 + creep * easeIO(p), y: y0 - mh * s0 * 0.035 * Math.abs(step), r: 1.2 * step, sx: s0, sy: s0 };
-    }
-    if (t < T_JUMP) { // crouch, loading the hind legs
-      const q = easeOut((t - T_CROUCH) / (T_JUMP - T_CROUCH));
-      return { x: x0 + creep - creep * 0.2 * q, y: y0, r: 3 * q, sx: s0 * (1 + 0.05 * q), sy: s0 * (1 - 0.12 * q) };
-    }
-    if (t < T_LAND) { // the leap: arcs to the centre and grows as it comes forward
-      const u = (t - T_JUMP) / (T_LAND - T_JUMP), a = jump(u);
-      const release = Math.max(0, 1 - u * 5), stretch = Math.sin(Math.PI * a.k), sc = lerp(s0, 1, a.k);
-      return { x: a.x, y: a.y, r: lerp(3, heading(u), Math.min(1, u * 6)), sx: sc * (1 + 0.1 * stretch) * (1 + 0.05 * release), sy: sc * (1 - 0.06 * stretch) * (1 - 0.12 * release) };
-    }
-    // landing: absorb the impact and settle into the logo pose
-    const v = Math.min(1, (t - T_LAND) / (T_END - T_LAND));
-    const sq = v < .25 ? Math.sin(v / .25 * Math.PI / 2) : Math.cos((v - .25) / .75 * Math.PI / 2);
-    return { x: 0, y: 0, r: rLand * Math.exp(-5 * v) * Math.cos(v * 7), sx: 1 + 0.035 * sq, sy: 1 - 0.07 * sq };
+  let frozen = false, exiting = false, auto = 0, raf = 0;
+  const t0 = performance.now();
+  function freeze() {
+    if (frozen) return; frozen = true;
+    svg.style.opacity = '1'; // the vector logo takes over from the canvas, pixel for pixel
+    A(glow, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.5)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.08)', offset: .3 }, { opacity: .85, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 1400, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    A(glow, [{ filter: 'brightness(2.4)' }, { filter: 'brightness(1)' }], { duration: 900, easing: 'ease-out' });
+    A(line, [{ transform: 'scaleX(0)', opacity: 0 }, { transform: 'scaleX(1)', opacity: 1 }], { duration: 900 });
+    A(shine, [{ transform: 'skewX(-18deg) translateX(0px)' }, { transform: 'skewX(-18deg) translateX(2600px)' }], { duration: 1150, delay: 60, easing: 'cubic-bezier(.45,0,.2,1)' });
+    A(word, [{ letterSpacing: '.75em' }, { letterSpacing: '.34em' }], { duration: 1700, delay: 80 });
+    letters.forEach((l, i) => A(l, [{ transform: 'translateY(140%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 900, delay: 130 + i * 32 }));
+    A(tag, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 850, delay: 600 });
+    auto = setTimeout(exit, 1750);
   }
-  const N = 140, path = [];
-  for (let i = 0; i <= N; i++) {
-    const p = pose(i / N * T_END);
-    path.push({ offset: i / N, transform: `translate(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px) rotate(${p.r.toFixed(2)}deg) scale(${p.sx.toFixed(4)},${p.sy.toFixed(4)})` });
+  function tick(now) {
+    const t = (now - t0) / 1000;
+    if (scene) scene.render(t, frozen ? { figure: false, reflection: true, reflectionAlpha: 1 - .7 * clamp((t - T_FREEZE) / .7) } : {});
+    if (!frozen && t >= T_FREEZE) freeze();
+    raf = requestAnimationFrame(tick);
   }
-  path[N].transform = 'translate(0px,0px) rotate(0deg) scale(1,1)';
-  const at = ms => ms / TT;
+  raf = requestAnimationFrame(tick);
 
-  // 1 · the outline draws itself while the jaguar prowls on the left
-  A(svg, path, { duration: T_END, delay: D0, easing: 'linear' });
-  A(svg, [{ opacity: 0 }, { opacity: 1 }], { duration: 450, delay: D0, easing: 'ease-out' });
-  strokes.forEach(s => {
-    const big = s.len > maxLen * 0.35;
-    A(s.p, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], {
-      duration: big ? 950 : 450,
-      delay: D0 + (big ? 0 : 250 + (s.x / 1680) * 600),
-      easing: 'cubic-bezier(.65,0,.35,1)'
-    });
-  });
-  A(fill, [{ opacity: 0, offset: 0 }, { opacity: 0, offset: at(700) }, { opacity: .28, offset: at(T_JUMP) }, { opacity: .28, offset: at(T_LAND) }, { opacity: 1, offset: at(T_LAND + 350) }, { opacity: 1, offset: 1 }], { duration: TT, delay: D0, easing: 'linear' });
-  A(strokesG, [{ opacity: 1, offset: 0 }, { opacity: 1, offset: at(T_LAND) }, { opacity: 0, offset: at(T_LAND + 600) }, { opacity: 0, offset: 1 }], { duration: TT, delay: D0, easing: 'linear' });
-  // 2 · afterimages trail the leap
-  ghosts.forEach((g, i) => {
-    const lag = 55 * (i + 1);
-    A(g, path, { duration: T_END, delay: D0 + lag, easing: 'linear' });
-    A(g, [{ opacity: 0, offset: 0 }, { opacity: 0, offset: at(T_JUMP) }, { opacity: [.34, .2, .1][i], offset: at(T_JUMP + 150) }, { opacity: 0, offset: at(T_LAND + 80) }, { opacity: 0, offset: 1 }], { duration: TT, delay: D0 + lag, easing: 'linear' });
-  });
-  // 3 · landing: impact, light burst, hairline shockwave, shine sweep
-  const L = D0 + T_LAND;
-  A(stage, [{ transform: 'translate(0,0)' }, { transform: 'translate(0,5px)', offset: .15 }, { transform: 'translate(0,-3px)', offset: .4 }, { transform: 'translate(0,1px)', offset: .7 }, { transform: 'translate(0,0)' }], { duration: 420, delay: L, easing: 'ease-out' });
-  A(glow, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.5)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.08)', offset: .35 }, { opacity: .85, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 1400, delay: L - 60, easing: 'cubic-bezier(.2,.8,.2,1)' });
-  A(glow, [{ filter: 'brightness(2.2)' }, { filter: 'brightness(1)' }], { duration: 900, delay: L, easing: 'ease-out' });
-  A(line, [{ transform: 'scaleX(0)', opacity: 0 }, { transform: 'scaleX(1)', opacity: 1 }], { duration: 900, delay: L - 20 });
-  A(shine, [{ transform: 'skewX(-18deg) translateX(0px)' }, { transform: 'skewX(-18deg) translateX(2600px)' }], { duration: 1200, delay: L + 150, easing: 'cubic-bezier(.45,0,.2,1)' });
-  // 4 · wordmark
-  A(word, [{ letterSpacing: '.75em' }, { letterSpacing: '.34em' }], { duration: 1800, delay: L + 100 });
-  letters.forEach((l, i) => A(l, [{ transform: 'translateY(110%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 950, delay: L + 150 + i * 34 }));
-  A(tag, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 900, delay: L + 750 });
-
-  let exiting = false;
-  const exit = () => {
-    if (exiting) return; exiting = true;
+  function exit() {
+    if (exiting) return;
+    freeze(); clearTimeout(auto); exiting = true;
     anims.forEach(a => { try { a.finish(); } catch (e) {} });
-    const mark = $('#introMark'), target = $('#navJag');
+    const target = $('#navJag');
     const a = mark.getBoundingClientRect(), b = target.getBoundingClientRect();
     const dx = b.left - a.left, dy = b.top - a.top, s = b.width / a.width;
     const io = 'cubic-bezier(.77,0,.18,1)';
     [word, tag, line, glow, $('#introSkip'), $('.intro__place')].forEach((el, i) =>
       el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500, delay: i * 40, fill: 'forwards', easing: 'ease-in' }));
+    if (sceneCv.isConnected) sceneCv.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, delay: 200, fill: 'forwards', easing: 'ease-in' });
     const fly = mark.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx}px,${dy}px) scale(${s})` }], { duration: 1150, delay: 280, easing: io, fill: 'forwards' });
     $('.intro__half--top').animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-101%)' }], { duration: 1150, delay: 520, easing: io, fill: 'forwards' });
     $('.intro__half--bottom').animate([{ transform: 'translateY(0)' }, { transform: 'translateY(101%)' }], { duration: 1150, delay: 520, easing: io, fill: 'forwards' });
     setTimeout(ready, 820);
-    fly.onfinish = () => { target.style.opacity = '1'; intro.remove(); introDone = true; };
-  };
-  const auto = setTimeout(exit, L + 1950);
-  $('#introSkip').addEventListener('click', () => { clearTimeout(auto); exit(); });
-  addEventListener('keydown', function k(e) { if (e.key === 'Escape' && !exiting) { clearTimeout(auto); exit(); removeEventListener('keydown', k); } });
+    fly.onfinish = () => { cancelAnimationFrame(raf); removeEventListener('resize', onResize); target.style.opacity = '1'; intro.remove(); introDone = true; };
+  }
+  $('#introSkip').addEventListener('click', exit);
+  addEventListener('keydown', function k(e) { if (e.key === 'Escape' && !exiting) { exit(); removeEventListener('keydown', k); } });
 }
 
 /* ---------- Manifesto: split into words ---------- */
