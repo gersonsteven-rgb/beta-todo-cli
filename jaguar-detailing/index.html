@@ -124,7 +124,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 .nav__cta{min-height:44px;padding:0 20px;font-size:11.5px}
 .nav__toggle{display:none;background:none;border:1px solid rgba(214,166,81,.4);color:var(--pearl);height:44px;padding:0 16px;font:600 11px/1 var(--f-display);letter-spacing:.22em;text-transform:uppercase;cursor:pointer}
 .js:not(.is-ready) .nav__word,.js:not(.is-ready) .nav__links,.js:not(.is-ready) .nav__cta,.js:not(.is-ready) .nav__toggle{opacity:0;transform:translateY(-8px)}
-.nav__word,.nav__links,.nav__cta,.nav__toggle{transition:opacity .9s var(--ease) .5s,transform .9s var(--ease) .5s}
+.nav__jag,.nav__word,.nav__links,.nav__cta,.nav__toggle{transition:opacity .9s var(--ease) .5s,transform .9s var(--ease) .5s}
 .menu{position:fixed;inset:0;z-index:55;background:rgba(6,7,8,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:grid;align-content:center;gap:10px;padding:120px var(--gutter) 60px}
 .menu a{font:250 clamp(2.2rem,11vw,3.4rem)/1.15 var(--f-display);font-stretch:118%;text-decoration:none;color:var(--pearl);border-bottom:1px solid var(--rule);padding-block:12px}
 .menu a em{font-family:var(--f-serif);color:var(--gold)}
@@ -134,8 +134,12 @@ ul,ol{margin:0;padding:0;list-style:none}
 .hero__gl{position:absolute;inset:0;width:100%;height:100%;opacity:.95}
 .hero__gl.is-off{display:none}
 .hero__shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(6,7,8,.85) 0%,rgba(6,7,8,.35) 45%,rgba(6,7,8,0) 70%),linear-gradient(0deg,var(--ink) 0%,rgba(6,7,8,0) 35%)}
-.hero__inner{position:relative;z-index:2;min-height:100svh;max-width:var(--maxw);margin-inline:auto;padding:130px var(--gutter) 36px;display:grid;grid-template-rows:1fr auto auto auto;gap:clamp(22px,3.4vh,40px);will-change:transform}
-.hero__eyebrow{align-self:end}
+.hero__inner{position:relative;z-index:2;min-height:100svh;max-width:var(--maxw);margin-inline:auto;padding:112px var(--gutter) 36px;display:grid;grid-template-rows:1fr auto auto auto auto;gap:clamp(20px,3vh,36px);will-change:transform}
+.hero__jag{position:relative;align-self:end;width:clamp(250px,31vw,450px);aspect-ratio:1680/615}
+.hero__jag svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.hero__jag::before{content:"";position:absolute;left:50%;top:45%;width:150%;height:200%;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(246,224,164,.11),rgba(246,224,164,0));pointer-events:none;z-index:-1}
+.hero__gleam{opacity:.5;transform:skewX(-18deg) translateX(-700px);animation:heroGleam 7s cubic-bezier(.45,0,.2,1) 3s infinite}
+@keyframes heroGleam{0%{transform:skewX(-18deg) translateX(-700px)}30%,100%{transform:skewX(-18deg) translateX(2400px)}}
 .hero__title{font:200 clamp(2.9rem,11.2vw,11.5rem)/.88 var(--f-display);font-stretch:125%;letter-spacing:-.035em;text-transform:uppercase;margin-left:-.05em}
 .hero__title .line{display:block;overflow:hidden;padding-bottom:.06em}
 .hero__title .line>span{display:inline-block}
@@ -350,7 +354,8 @@ ul,ol{margin:0;padding:0;list-style:none}
   .nav__jag{width:58px}
   .nav__word b{font-size:13px}
   .nav__cta{display:none}
-  .hero__inner{padding-top:110px;gap:22px}
+  .hero__inner{padding-top:96px;gap:20px}
+  .hero__jag{width:78vw}
   .hero__foot{grid-template-columns:minmax(0,1fr)}
   .hero__tags{display:none}
   .hero__actions .btn{flex:1 1 auto}
@@ -422,8 +427,8 @@ ul,ol{margin:0;padding:0;list-style:none}
       <div class="intro__mark" id="introMark">
         <svg viewBox="0 0 1680 615" id="introSvg">
           <use href="#jag" fill="url(#goldFill)"/>
-          <use href="#jag" class="intro__lit" fill="url(#topLight)"/>
-          <use href="#jag" class="intro__lit" fill="url(#underShade)"/>
+          <use href="#jag" fill="url(#topLight)"/>
+          <use href="#jag" fill="url(#underShade)"/>
           <g clip-path="url(#jagClip)"><rect class="intro__shine" x="-520" y="0" width="420" height="615" fill="url(#shineGrad)" transform="skewX(-18)"/></g>
         </svg>
       </div>
@@ -466,6 +471,14 @@ ul,ol{margin:0;padding:0;list-style:none}
   <canvas class="hero__gl" id="heroGL" aria-hidden="true"></canvas>
   <div class="hero__shade" aria-hidden="true"></div>
   <div class="hero__inner" id="heroInner">
+    <div class="hero__jag" id="heroJag" aria-hidden="true">
+      <svg viewBox="0 0 1680 615">
+        <use href="#jag" fill="url(#goldFill)"/>
+        <use href="#jag" fill="url(#topLight)"/>
+        <use href="#jag" fill="url(#underShade)"/>
+        <g clip-path="url(#jagClip)"><rect class="hero__gleam" x="0" y="0" width="420" height="615" fill="url(#shineGrad)"/></g>
+      </svg>
+    </div>
     <p class="eyebrow hero__eyebrow hero__fade" style="--i:0">Pro Detailing · Alajuela</p>
     <h1 class="hero__title">
       <span class="line"><span style="--i:0">Cuidamos</span></span>
@@ -875,7 +888,7 @@ function runIntro() {
   const letters = $$('.ch', word);
   const shine = $('.intro__shine'), svg = $('#introSvg'), cam = $('#introCam'), mark = $('#introMark');
   const line = $('.intro__line'), tag = $('.intro__tag'), glow = $('.intro__glow');
-  const beam = $('.intro__beam'), lamp = $('.intro__lamp'), dustCv = $('#introDust'), lit = $$('.intro__lit'), flash = $('.intro__flash');
+  const beam = $('.intro__beam'), lamp = $('.intro__lamp'), dustCv = $('#introDust'), flash = $('.intro__flash');
   const anims = [];
   const A = (el, kf, o) => { const a = el.animate(kf, Object.assign({ fill: 'both', easing: 'cubic-bezier(.16,1,.3,1)' }, o)); anims.push(a); return a; };
 
@@ -891,31 +904,32 @@ function runIntro() {
     return;
   }
 
-  $('#navJag').style.opacity = '0';
+  const heroJag = $('#heroJag');
+  heroJag.style.opacity = '0';
   const dust = makeDust(dustCv);
   const onResize = () => dust.resize();
   addEventListener('resize', onResize);
-  const T_EXIT = 1950, POP = 380;
+  const T_EXIT = 4400, POP = 700;
   // 1 · the stage is already lit: spotlight, beam, dust and the floor line
-  const on = { duration: 220, easing: 'ease-out' };
+  const on = { duration: 260, easing: 'ease-out' };
   A(lamp, [{ opacity: 0 }, { opacity: .85 }], on);
   A(beam, [{ opacity: 0 }, { opacity: .8 }], on);
   A(dustCv, [{ opacity: 0 }, { opacity: 1 }], on);
   A(line, [{ transform: 'scaleX(1)', opacity: 0 }, { transform: 'scaleX(1)', opacity: .7 }], on);
-  // 2 · pum: the logo lands in the light with a flash
-  A(svg, [{ opacity: 0, transform: 'scale(1.1)', filter: 'brightness(2.8) blur(6px)' }, { opacity: 1, transform: 'scale(.985)', filter: 'brightness(1.6) blur(0px)', offset: .35 }, { opacity: 1, transform: 'scale(1)', filter: 'brightness(1) blur(0px)' }], { duration: 750, delay: POP, easing: 'cubic-bezier(.2,.9,.25,1)' });
-  A(flash, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.55)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)', offset: .18 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.15)' }], { duration: 900, delay: POP, easing: 'ease-out' });
-  A(glow, [{ opacity: 0 }, { opacity: 1, offset: .25 }, { opacity: .85 }], { duration: 1100, delay: POP, easing: 'ease-out' });
-  A(beam, [{ opacity: .8 }, { opacity: 1 }], { duration: 400, delay: POP, easing: 'ease-out' });
-  A(lamp, [{ opacity: .85, transform: 'translate(-50%,-50%) scale(1)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.18)', offset: .25 }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 700, delay: POP, easing: 'ease-out' });
-  A(line, [{ opacity: .7 }, { opacity: 1 }], { duration: 400, delay: POP, easing: 'ease-out' });
-  // 3 · wordmark and a quick gleam across the gold
-  A(word, [{ letterSpacing: '.6em' }, { letterSpacing: '.34em' }], { duration: 1300, delay: POP + 180 });
-  letters.forEach((l, i) => A(l, [{ transform: 'translateY(140%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 750, delay: POP + 200 + i * 24 }));
-  A(tag, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 700, delay: POP + 560 });
-  A(shine, [{ transform: 'skewX(-18deg) translateX(0px)' }, { transform: 'skewX(-18deg) translateX(2600px)' }], { duration: 1050, delay: POP + 420, easing: 'cubic-bezier(.45,0,.2,1)' });
+  // 2 · pum: the logo lands in the light, white-hot, and cools to gold
+  A(svg, [{ opacity: 0, transform: 'scale(1.14)', filter: 'brightness(3.2) blur(8px)' }, { opacity: 1, transform: 'scale(.99)', filter: 'brightness(1.8) blur(0px)', offset: .3 }, { opacity: 1, transform: 'scale(1)', filter: 'brightness(1) blur(0px)' }], { duration: 1400, delay: POP, easing: 'cubic-bezier(.2,.9,.25,1)' });
+  A(flash, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.5)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)', offset: .15 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.2)' }], { duration: 1500, delay: POP, easing: 'ease-out' });
+  A(glow, [{ opacity: 0 }, { opacity: 1, offset: .25 }, { opacity: .85 }], { duration: 1800, delay: POP, easing: 'ease-out' });
+  A(beam, [{ opacity: .8 }, { opacity: 1 }], { duration: 600, delay: POP, easing: 'ease-out' });
+  A(lamp, [{ opacity: .85, transform: 'translate(-50%,-50%) scale(1)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.2)', offset: .25 }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 900, delay: POP, easing: 'ease-out' });
+  A(line, [{ opacity: .7 }, { opacity: 1 }], { duration: 600, delay: POP, easing: 'ease-out' });
+  // 3 · wordmark, then a slow gleam across the gold
+  A(word, [{ letterSpacing: '.7em' }, { letterSpacing: '.34em' }], { duration: 2000, delay: POP + 450 });
+  letters.forEach((l, i) => A(l, [{ transform: 'translateY(140%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 1000, delay: POP + 500 + i * 38 }));
+  A(tag, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 900, delay: POP + 1150 });
+  A(shine, [{ transform: 'skewX(-18deg) translateX(0px)' }, { transform: 'skewX(-18deg) translateX(2600px)' }], { duration: 1700, delay: POP + 1350, easing: 'cubic-bezier(.45,0,.2,1)' });
   // 4 · a slow push-in on the whole composition until the page opens
-  A(cam, [{ transform: 'scale(.95)' }, { transform: 'scale(1)' }], { duration: T_EXIT, easing: 'cubic-bezier(.4,.05,.4,1)' });
+  A(cam, [{ transform: 'scale(.94)' }, { transform: 'scale(1)' }], { duration: T_EXIT, easing: 'cubic-bezier(.4,.05,.4,1)' });
 
   const t0 = performance.now();
   let raf = requestAnimationFrame(function tick(now) { dust.draw((now - t0) / 1000); raf = requestAnimationFrame(tick); });
@@ -923,18 +937,17 @@ function runIntro() {
   function exit() {
     if (exiting) return; exiting = true; clearTimeout(auto);
     anims.forEach(a => { try { a.finish(); } catch (e) {} });
-    const target = $('#navJag');
-    const a = mark.getBoundingClientRect(), b = target.getBoundingClientRect();
+    const a = mark.getBoundingClientRect(), b = heroJag.getBoundingClientRect();
     const dx = b.left - a.left, dy = b.top - a.top, s = b.width / a.width;
     const io = 'cubic-bezier(.77,0,.18,1)';
     [word, tag, line, glow, beam, lamp, dustCv, $('#introSkip'), $('.intro__place')].forEach((el, i) =>
       el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, delay: Math.min(i, 4) * 30, fill: 'forwards', easing: 'ease-in' }));
-    lit.forEach(el => el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 600, delay: 180, fill: 'forwards' }));
-    const fly = mark.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx}px,${dy}px) scale(${s})` }], { duration: 1000, delay: 180, easing: io, fill: 'forwards' });
-    $('.intro__half--top').animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-101%)' }], { duration: 950, delay: 360, easing: io, fill: 'forwards' });
-    $('.intro__half--bottom').animate([{ transform: 'translateY(0)' }, { transform: 'translateY(101%)' }], { duration: 950, delay: 360, easing: io, fill: 'forwards' });
-    setTimeout(ready, 620);
-    fly.onfinish = () => { cancelAnimationFrame(raf); removeEventListener('resize', onResize); target.style.opacity = '1'; intro.remove(); introDone = true; };
+    // the intro logo glides down into the jaguar above the headline
+    const fly = mark.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx}px,${dy}px) scale(${s})` }], { duration: 1300, delay: 200, easing: io, fill: 'forwards' });
+    $('.intro__half--top').animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-101%)' }], { duration: 1100, delay: 380, easing: io, fill: 'forwards' });
+    $('.intro__half--bottom').animate([{ transform: 'translateY(0)' }, { transform: 'translateY(101%)' }], { duration: 1100, delay: 380, easing: io, fill: 'forwards' });
+    setTimeout(ready, 700);
+    fly.onfinish = () => { cancelAnimationFrame(raf); removeEventListener('resize', onResize); heroJag.style.opacity = ''; intro.remove(); introDone = true; };
   }
   const auto = setTimeout(exit, T_EXIT);
   $('#introSkip').addEventListener('click', exit);
