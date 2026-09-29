@@ -128,6 +128,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 .menu{position:fixed;inset:0;z-index:55;background:rgba(6,7,8,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:grid;align-content:center;gap:10px;padding:120px var(--gutter) 60px}
 .menu a{font:250 clamp(2.2rem,11vw,3.4rem)/1.15 var(--f-display);font-stretch:118%;text-decoration:none;color:var(--pearl);border-bottom:1px solid var(--rule);padding-block:12px}
 .menu a em{font-family:var(--f-serif);color:var(--gold)}
+.menu .menu__wa{font:600 12.5px/1 var(--f-display);font-stretch:112%;letter-spacing:.16em;border:0;padding:0 24px;margin-top:22px;min-height:56px;color:var(--ink)}
 
 /* ============ HERO ============ */
 .hero{position:relative;min-height:100svh;overflow:hidden;background:radial-gradient(90% 70% at 75% 30%,#15120c,var(--ink) 70%)}
@@ -357,7 +358,11 @@ ul,ol{margin:0;padding:0;list-style:none}
   .step{grid-template-columns:minmax(0,1fr);gap:4px}
   .contact__row{grid-template-columns:minmax(0,1fr)}
   .fab span{display:none}
-  .fab{padding:0;width:56px;justify-content:center}
+  .fab{padding:0;width:52px;height:52px;justify-content:center}
+  .brands .eyebrow{font-size:10px;letter-spacing:.16em;gap:10px;margin-right:0}
+  .brands .eyebrow::before,.brands .eyebrow::after{width:20px}
+  .cta{padding-top:clamp(150px,24vh,190px)}
+  .cta__jag{top:28px;right:-10vw;width:96vw}
   .btn{letter-spacing:.13em;padding:0 18px}
   .glass__labels{padding-inline:10%;bottom:12px}
   .glass__labels span{font-size:9px;letter-spacing:.16em;padding:6px 8px}
@@ -455,6 +460,7 @@ ul,ol{margin:0;padding:0;list-style:none}
   <a href="#resultados"><em>Resultados</em></a>
   <a href="#proceso">Proceso</a>
   <a href="#contacto">Contacto</a>
+  <a class="btn btn--gold menu__wa" data-wa href="https://wa.me/50672384351" target="_blank" rel="noopener">Agendar por WhatsApp</a>
 </div>
 
 <main>
@@ -984,7 +990,7 @@ function measure() {
 }
 
 /* ---------- Scroll-driven frame ---------- */
-let lastY = scrollY, vel = 0, mqAx = 0, mqBx = 0, lastStep = 0, lastSvc = -1;
+let fabDown = false, lastY = scrollY, vel = 0, mqAx = 0, mqBx = 0, lastStep = 0, lastSvc = -1;
 function update(t) {
   const y = scrollY;
   const dy = y - lastY; lastY = y;
@@ -996,7 +1002,8 @@ function update(t) {
     nav.classList.toggle('is-solid', y > 40);
     if (!menu.hidden || y < vh * 0.6 || dy < -1.5) nav.classList.remove('is-hidden');
     else if (dy > 1.5) nav.classList.add('is-hidden');
-    fab.classList.toggle('is-away', y < vh * 0.5 || y > docH - vh * 1.6);
+    if (dy > 2) fabDown = true; else if (dy < -2) fabDown = false;
+    fab.classList.toggle('is-away', fabDown || y < vh * 0.5 || y > docH - vh * 1.6);
   }
 
   // active nav link
@@ -1053,7 +1060,7 @@ function update(t) {
   {
     const p = easeOut(clamp((y + vh - M.ctaT) / (vh * 1.1)));
     ctaJag.style.transform = `translate3d(${(1 - p) * -60}vw,0,0) skewX(${(1 - p) * -14}deg)`;
-    ctaJag.style.opacity = String(0.02 + p * 0.1);
+    ctaJag.style.opacity = String((0.02 + p * 0.1) * (vw < 720 ? 1.8 : 1));
   }
 }
 
