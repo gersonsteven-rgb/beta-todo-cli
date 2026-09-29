@@ -159,18 +159,6 @@ ul,ol{margin:0;padding:0;list-style:none}
 .js:not(.is-ready) .hero__fade{opacity:0;transform:translateY(18px)}
 .hero__fade{transition:opacity 1.2s var(--ease) calc(var(--i,0) * 120ms + 450ms),transform 1.2s var(--ease) calc(var(--i,0) * 120ms + 450ms)}
 
-/* ============ MANIFESTO ============ */
-.manifesto{position:relative;height:260vh}
-.manifesto__sticky{position:sticky;top:0;height:100vh;height:100svh;display:grid;align-content:center;gap:36px;max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gutter)}
-.manifesto__text{font:250 clamp(1.7rem,4vw,3.6rem)/1.18 var(--f-display);font-stretch:110%;letter-spacing:-.02em;max-width:24ch;text-wrap:pretty}
-.manifesto__text .w{opacity:var(--o,.16);transition:opacity .25s linear}
-.manifesto__text em{font-family:var(--f-serif);font-style:italic;font-weight:400;font-stretch:100%;color:var(--gold);font-size:1.08em}
-.no-scrollfx .manifesto{height:auto;padding-block:18vh}
-.no-scrollfx .manifesto__sticky{position:static;height:auto}
-.no-scrollfx .manifesto__text .w{opacity:1}
-.manifesto__sign{display:flex;align-items:center;gap:18px;color:var(--smoke);font-size:14px}
-.manifesto__sign svg{width:64px}
-
 /* ============ SERVICES (pinned horizontal) ============ */
 .services{position:relative}
 .services__sticky{position:relative;display:flex;flex-direction:column;justify-content:center;gap:clamp(24px,5vh,56px);padding-block:clamp(90px,12vh,130px) clamp(40px,7vh,70px);overflow:hidden}
@@ -503,18 +491,6 @@ ul,ol{margin:0;padding:0;list-style:none}
       <ul class="hero__tags" aria-label="Servicios principales">
         <li>Lavado premium</li><li>Pulido profesional</li><li>Cerámico en parabrisas</li>
       </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ============ MANIFESTO ============ -->
-<section class="manifesto" id="filosofia" aria-label="Nuestra filosofía">
-  <div class="manifesto__sticky">
-    <p class="eyebrow">Nuestra filosofía</p>
-    <p class="manifesto__text" id="manifesto">Un vehículo de alta gama merece el mismo cuidado con el que fue construido. Trabajamos panel por panel, bajo <em>luz de inspección,</em> hasta que la pintura vuelve a reflejar como <em>el primer día.</em></p>
-    <div class="manifesto__sign">
-      <svg viewBox="0 0 1680 615" aria-hidden="true"><use href="#jag" fill="url(#goldFill)"/></svg>
-      <span>Jaguar Detailing · Pro Detailing</span>
     </div>
   </div>
 </section>
@@ -962,26 +938,8 @@ function runIntro() {
   addEventListener('keydown', function k(e) { if (e.key === 'Escape' && !exiting) { exit(); removeEventListener('keydown', k); } });
 }
 
-/* ---------- Manifesto: split into words ---------- */
-const manifesto = $('#manifesto');
-const words = [];
-(function splitWords(node) {
-  [...node.childNodes].forEach(n => {
-    if (n.nodeType === 3) {
-      const frag = document.createDocumentFragment();
-      n.textContent.split(/(\s+)/).forEach(part => {
-        if (!part) return;
-        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
-        const s = document.createElement('span'); s.className = 'w'; s.textContent = part; frag.appendChild(s); words.push(s);
-      });
-      n.replaceWith(frag);
-    } else if (n.nodeType === 1) splitWords(n);
-  });
-})(manifesto);
-
 /* ---------- Layout metrics (cached, re-measured on resize) ---------- */
 const hero = $('#inicio'), heroInner = $('#heroInner');
-const manSec = $('#filosofia');
 const svcSec = $('#servicios'), svcTrack = $('#svcTrack'), svcBar = $('#svcBar'), svcNow = $('#svcNow');
 const svcCards = $$('.svc', svcTrack);
 $('#svcTotal').textContent = String(svcCards.length).padStart(2, '0');
@@ -1015,7 +973,6 @@ function measure() {
     svcSec.style.height = (dist + vh) + 'px';
   }
   M.heroH = hero.offsetHeight;
-  M.manT = absTop(manSec); M.manH = manSec.offsetHeight;
   M.svcT = absTop(svcSec); M.svcH = svcSec.offsetHeight;
   M.stepsT = absTop(stepsEl); M.stepsH = stepsEl.offsetHeight;
   M.stepTops = stepItems.map(absTop);
@@ -1026,7 +983,7 @@ function measure() {
 }
 
 /* ---------- Scroll-driven frame ---------- */
-let lastY = scrollY, vel = 0, mqAx = 0, mqBx = 0, lastStep = 0, lastWordLit = -1, lastSvc = -1;
+let lastY = scrollY, vel = 0, mqAx = 0, mqBx = 0, lastStep = 0, lastSvc = -1;
 function update(t) {
   const y = scrollY;
   const dy = y - lastY; lastY = y;
@@ -1053,17 +1010,6 @@ function update(t) {
     const p = y / M.heroH;
     heroInner.style.transform = `translate3d(0,${y * 0.32}px,0)`;
     heroInner.style.opacity = String(clamp(1 - p * 1.25));
-  }
-
-  // manifesto words light up
-  {
-    const p = clamp((y - M.manT + vh * 0.35) / (M.manH - vh * 0.6));
-    const lit = p * words.length * 1.08;
-    const key = Math.round(lit * 10);
-    if (key !== lastWordLit) {
-      lastWordLit = key;
-      words.forEach((w, i) => w.style.setProperty('--o', (0.16 + 0.84 * clamp(lit - i)).toFixed(3)));
-    }
   }
 
   // services: vertical scroll -> horizontal track
