@@ -330,7 +330,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 .js .reveal{opacity:0;transform:translateY(34px);transition:opacity 1.1s var(--ease) var(--d,0ms),transform 1.1s var(--ease) var(--d,0ms)}
 .js .reveal.in{opacity:1;transform:none}
 .js .reveal-mask{clip-path:inset(0 0 100% 0);transform:translateY(30px);transition:clip-path 1.3s var(--ease) var(--d,0ms),transform 1.3s var(--ease) var(--d,0ms)}
-.js .reveal-mask.in{clip-path:inset(0 0 -10% 0);transform:none}
+.js .reveal-mask.in{clip-path:inset(-25% -6% -25% -6%);transform:none}
 
 /* ============ RESPONSIVE ============ */
 @media (max-width:1020px){
@@ -500,11 +500,11 @@ ul,ol{margin:0;padding:0;list-style:none}
   <div class="services__sticky" id="svcSticky">
     <div class="wrap services__head">
       <div>
-        <p class="eyebrow reveal">Servicios</p>
-        <h2 class="h2 reveal-mask" style="margin-top:22px">Tratamientos para <em class="gold-text">cada superficie.</em></h2>
+        <p class="eyebrow reveal">Lo que hacemos</p>
+        <h2 class="h2 reveal-mask" style="margin-top:22px">Nuestros <em class="gold-text">servicios.</em></h2>
       </div>
       <div class="services__meter reveal" style="--d:150ms" aria-hidden="true">
-        <span><b id="svcNow">01</b> / <span id="svcTotal">05</span></span>
+        <span><b id="svcNow">01</b> / <span id="svcTotal">04</span></span>
         <i><span id="svcBar"></span></i>
       </div>
     </div>
@@ -525,7 +525,7 @@ ul,ol{margin:0;padding:0;list-style:none}
           </svg>
         </div>
         <div class="svc__body">
-          <p class="svc__kicker">Exterior</p>
+          <p class="svc__kicker">01 · Exterior</p>
           <h3>Lavado Premium</h3>
           <p>Lavado a mano con productos de pH neutro, secado con microfibra y limpieza de rines y llantas. El punto de partida de todo buen acabado.</p>
           <ul class="svc__list"><li>Carrocería, rines y llantas</li><li>Secado sin marcas</li><li>Acabado con brillo</li></ul>
@@ -543,7 +543,7 @@ ul,ol{margin:0;padding:0;list-style:none}
           </svg>
         </div>
         <div class="svc__body">
-          <p class="svc__kicker">Pintura</p>
+          <p class="svc__kicker">02 · Pintura</p>
           <h3>Pulido Profesional</h3>
           <p>Devolvemos profundidad y brillo a la pintura. Retiramos opacidad, hologramas y oxidación leve hasta lograr un reflejo limpio.</p>
           <ul class="svc__list"><li>Brillo tipo espejo</li><li>Menos opacidad y hologramas</li><li>Color más profundo</li></ul>
@@ -568,7 +568,7 @@ ul,ol{margin:0;padding:0;list-style:none}
           </svg>
         </div>
         <div class="svc__body">
-          <p class="svc__kicker">Superficies</p>
+          <p class="svc__kicker">03 · Superficies</p>
           <h3>Corrección de rayones</h3>
           <p>Tratamos micro-rayones y marcas de uso en la pintura, restauramos la claridad de los focos opacos y corregimos el vidrio.</p>
           <ul class="svc__list"><li>Micro-rayones en pintura</li><li>Focos opacos o amarillentos</li><li>Vidrios con marcas</li></ul>
@@ -589,7 +589,7 @@ ul,ol{margin:0;padding:0;list-style:none}
           </svg>
         </div>
         <div class="svc__body">
-          <p class="svc__kicker">Parabrisas</p>
+          <p class="svc__kicker">04 · Parabrisas</p>
           <h3>Pulido + Cerámico</h3>
           <p>Pulimos el vidrio para eliminar micro-rayones y marcas de escobillas. Luego aplicamos una capa cerámica hidrofóbica que hace que el agua se deslice.</p>
           <ul class="svc__list"><li>Más visibilidad bajo lluvia</li><li>Menos reflejos de noche</li><li>Limpieza más sencilla</li></ul>
@@ -605,27 +605,6 @@ ul,ol{margin:0;padding:0;list-style:none}
 
     </div>
   </div>
-</section>
-
-<!-- ============ RESULTS ============ -->
-<section class="results" id="resultados">
-  <div class="wrap results__head">
-    <p class="eyebrow reveal">Resultados visibles</p>
-    <h2 class="h2 reveal-mask">La diferencia se ve <em class="gold-text">bajo la luz.</em></h2>
-    <p class="lead reveal" style="--d:120ms">Bajo una lámpara de inspección, los micro-rayones forman círculos alrededor del reflejo. Después de la corrección, la luz vuelve a ser un punto limpio. Arrastra la línea para comparar.</p>
-  </div>
-  <div class="compare-wrap reveal">
-    <div class="compare" id="compare">
-      <canvas id="compareCanvas" role="img" aria-label="Simulación de pintura negra bajo luz de inspección: a la izquierda con micro-rayones circulares, a la derecha pulida con reflejo limpio"></canvas>
-      <span class="compare__tag compare__tag--before">Antes</span>
-      <span class="compare__tag compare__tag--after">Después</span>
-      <div class="compare__handle" aria-hidden="true"></div>
-      <div class="compare__knob" id="compareKnob" role="slider" tabindex="0" aria-label="Comparar antes y después" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-        <svg viewBox="0 0 26 12" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M6 1L1 6l5 5M20 1l5 5-5 5"/></svg>
-      </div>
-    </div>
-  </div>
-  <p class="compare__note"><span>Simulación ilustrativa de la corrección de pintura.</span><span class="compare__hint">Mueve el cursor para mover la luz.</span></p>
 </section>
 
 <!-- ============ GLASS ============ -->
@@ -666,6 +645,27 @@ ul,ol{margin:0;padding:0;list-style:none}
       </div>
     </div>
   </div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section class="results" id="resultados">
+  <div class="wrap results__head">
+    <p class="eyebrow reveal">Resultados visibles</p>
+    <h2 class="h2 reveal-mask">La diferencia se ve <em class="gold-text">bajo la luz.</em></h2>
+    <p class="lead reveal" style="--d:120ms">Bajo una lámpara de inspección, los micro-rayones forman círculos alrededor del reflejo. Después de la corrección, la luz vuelve a ser un punto limpio. Arrastra la línea para comparar.</p>
+  </div>
+  <div class="compare-wrap reveal">
+    <div class="compare" id="compare">
+      <canvas id="compareCanvas" role="img" aria-label="Simulación de pintura negra bajo luz de inspección: a la izquierda con micro-rayones circulares, a la derecha pulida con reflejo limpio"></canvas>
+      <span class="compare__tag compare__tag--before">Antes</span>
+      <span class="compare__tag compare__tag--after">Después</span>
+      <div class="compare__handle" aria-hidden="true"></div>
+      <div class="compare__knob" id="compareKnob" role="slider" tabindex="0" aria-label="Comparar antes y después" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+        <svg viewBox="0 0 26 12" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M6 1L1 6l5 5M20 1l5 5-5 5"/></svg>
+      </div>
+    </div>
+  </div>
+  <p class="compare__note"><span>Simulación ilustrativa de la corrección de pintura.</span><span class="compare__hint">Mueve el cursor para mover la luz.</span></p>
 </section>
 
 <!-- ============ PROCESS ============ -->
@@ -942,7 +942,8 @@ function runIntro() {
 const hero = $('#inicio'), heroInner = $('#heroInner');
 const svcSec = $('#servicios'), svcTrack = $('#svcTrack'), svcBar = $('#svcBar'), svcNow = $('#svcNow');
 const svcCards = $$('.svc', svcTrack);
-$('#svcTotal').textContent = String(svcCards.length).padStart(2, '0');
+const svcCount = svcCards.filter(c => !c.classList.contains('svc--end')).length; // the closing advice card is not a service
+$('#svcTotal').textContent = String(svcCount).padStart(2, '0');
 const stepsEl = $('#steps'), stepRail = $('#stepRail'), stepItems = $$('.step', stepsEl), stepNum = $('#stepNum');
 const ctaSec = $('#contacto'), ctaJag = $('#ctaJag');
 const nav = $('#nav'), fab = $('#fab'), progress = $('#progress');
@@ -1017,7 +1018,7 @@ function update(t) {
     const p = clamp((y - M.svcT) / Math.max(1, M.svcH - vh));
     svcTrack.style.transform = `translate3d(${-p * M.svcDist}px,0,0)`;
     svcBar.style.transform = `scaleX(${(p * (svcCards.length - 1) + 1) / svcCards.length})`;
-    const idx = Math.min(svcCards.length - 1, Math.round(p * (svcCards.length - 1)));
+    const idx = Math.min(svcCount - 1, Math.round(p * (svcCards.length - 1)));
     if (idx !== lastSvc) { lastSvc = idx; svcNow.textContent = String(idx + 1).padStart(2, '0'); }
   }
 
