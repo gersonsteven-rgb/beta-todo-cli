@@ -325,7 +325,11 @@ ul,ol{margin:0;padding:0;list-style:none}
 .foot__links{display:flex;gap:28px;flex-wrap:wrap;font:500 12px/1 var(--f-display);letter-spacing:.2em;text-transform:uppercase}
 .foot__links a{text-decoration:none;color:var(--smoke)}
 .foot__links a:hover{color:var(--gold-hi)}
-.foot__word{font:500 clamp(3.2rem,15.5vw,16rem)/.8 var(--f-brand);letter-spacing:.06em;text-align:center;margin-top:clamp(40px,8vh,90px);white-space:nowrap;transform:translateY(12%);user-select:none}
+.foot__brand{display:grid;justify-items:center;margin-top:clamp(56px,10vh,110px);padding-inline:var(--gutter)}
+.foot__crest{display:flex;align-items:center;gap:clamp(12px,1.4vw,20px);font:500 clamp(10px,.95vw,13px)/1 var(--f-brand);letter-spacing:.5em;margin-right:-.5em;color:var(--gold);margin-bottom:clamp(10px,1.6vw,22px)}
+.foot__crest i{width:clamp(28px,4vw,72px);height:1px;background:currentColor;opacity:.6}
+.foot__word{font:500 clamp(3.4rem,15vw,15rem)/1 var(--f-brand);letter-spacing:.06em;margin-right:-.06em;white-space:nowrap;user-select:none}
+.foot__word--reflect{transform:scaleY(-1);margin-top:-.39em;opacity:.18;-webkit-mask-image:linear-gradient(to top,#000,transparent 58%);mask-image:linear-gradient(to top,#000,transparent 58%);pointer-events:none}
 .foot__legal{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:18px calc(22px + env(safe-area-inset-bottom,0px));font-size:12.5px;color:var(--smoke);border-top:1px solid var(--rule);position:relative;background:var(--ink)}
 
 /* Floating WhatsApp */
@@ -779,7 +783,11 @@ ul,ol{margin:0;padding:0;list-style:none}
       <a href="https://www.instagram.com/_jaguardetailing/" target="_blank" rel="noopener">Instagram</a>
     </nav>
   </div>
-  <p class="foot__word gold-text" aria-hidden="true">JAGUAR</p>
+  <div class="foot__brand reveal" aria-hidden="true">
+    <p class="foot__crest"><i></i>PRO DETAILING<i></i></p>
+    <p class="foot__word gold-text">JAGUAR</p>
+    <p class="foot__word foot__word--reflect gold-text">JAGUAR</p>
+  </div>
   <div class="foot__legal wrap">
     <span>© 2026 Jaguar Detailing · Pro Detailing</span>
     <span>Alajuela, Costa Rica · WhatsApp 7238-4351</span>
