@@ -86,7 +86,8 @@ ul,ol{margin:0;padding:0;list-style:none}
 .intro__stage{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:clamp(18px,3vh,30px);padding-inline:var(--gutter)}
 .intro__glow{position:absolute;left:50%;top:46%;width:min(90vw,900px);aspect-ratio:2/1;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(214,166,81,.22),rgba(214,166,81,.06) 55%,transparent);opacity:0;pointer-events:none}
 .intro__mark{position:relative;width:min(78vw,640px);aspect-ratio:1680/615;transform-origin:0 0}
-.intro__mark svg{width:100%;height:100%;overflow:visible}
+.intro__mark svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;transform-origin:50% 91%;will-change:transform}
+.intro__ghost{opacity:0;filter:blur(1.5px)}
 .intro__strokes path{fill:none;stroke:var(--gold-hi);stroke-width:1.1;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:1;stroke-linecap:round}
 .intro__line{width:min(70vw,560px);height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0)}
 .intro__word{font:500 clamp(18px,3vw,30px)/1 var(--f-brand);letter-spacing:.34em;color:var(--pearl);display:flex;overflow:hidden;padding-bottom:4px;margin-right:-.34em}
@@ -395,6 +396,9 @@ ul,ol{margin:0;padding:0;list-style:none}
   <div class="intro__stage" aria-hidden="true">
     <div class="intro__glow"></div>
     <div class="intro__mark" id="introMark">
+      <svg viewBox="0 0 1680 615" class="intro__ghost"><use href="#jag" fill="#d6a651"/></svg>
+      <svg viewBox="0 0 1680 615" class="intro__ghost"><use href="#jag" fill="#d6a651"/></svg>
+      <svg viewBox="0 0 1680 615" class="intro__ghost"><use href="#jag" fill="#d6a651"/></svg>
       <svg viewBox="0 0 1680 615" id="introSvg">
         <use href="#jag" class="intro__fill" fill="url(#goldFill)" opacity="0"/>
         <g clip-path="url(#jagClip)"><rect class="intro__shine" x="-520" y="0" width="420" height="615" fill="url(#shineGrad)" transform="skewX(-18)"/></g>
@@ -847,28 +851,78 @@ function runIntro() {
   $('#navJag').style.opacity = '0';
   const strokes = buildStrokes();
   const maxLen = Math.max(...strokes.map(s => s.len));
-  // 1 · hairline + glow
-  A(line, [{ transform: 'scaleX(0)', opacity: 0 }, { transform: 'scaleX(1)', opacity: 1 }], { duration: 1400, delay: 150 });
-  A(glow, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.6)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 2200, delay: 300 });
-  // 2 · the jaguar sprints in while its outline draws
-  A(svg, [{ transform: 'translateX(-14%) skewX(-12deg)', filter: 'blur(8px)', opacity: 0 }, { transform: 'translateX(0) skewX(0)', filter: 'blur(0px)', opacity: 1 }], { duration: 1500, delay: 100, easing: 'cubic-bezier(.19,1,.22,1)' });
+  const mark = $('#introMark'), stage = $('.intro__stage'), ghosts = $$('.intro__ghost');
+
+  // Choreography (ms): prowl on the left, crouch, leap in an arc, land centred in the logo pose.
+  const D0 = 150, T_CROUCH = 1050, T_JUMP = 1400, T_LAND = 2250, T_END = 2750, TT = 3000;
+  const vw = innerWidth, vh = innerHeight, mw = mark.offsetWidth, mh = mark.offsetHeight;
+  const gutter = clamp(vw * 0.042, 16, 64);
+  const s0 = vw < 720 ? 0.56 : 0.6;
+  const x0 = -vw / 2 + gutter + mw * s0 / 2;
+  const y0 = Math.min(vh * 0.1, 90);
+  const creep = mw * s0 * 0.05;
+  const peak = Math.min(vh * 0.2, 170, Math.abs(x0) * 0.75 + 40);
+  const easeIO = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  const jump = u => { const k = 0.7 * u + 0.3 * easeIO(u); return { k, x: lerp(x0 + creep * 0.8, 0, k), y: lerp(y0, 0, k) - peak * 4 * k * (1 - k) }; };
+  const heading = u => { const a = jump(Math.max(0, u - 0.02)), b = jump(Math.min(1, u + 0.02)); return clamp(Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI * 0.55, -14, 12); };
+  const rLand = heading(1);
+  function pose(t) {
+    if (t < T_CROUCH) { // two soft steps forward
+      const p = t / T_CROUCH, step = Math.sin(p * Math.PI * 2);
+      return { x: x0 + creep * easeIO(p), y: y0 - mh * s0 * 0.035 * Math.abs(step), r: 1.2 * step, sx: s0, sy: s0 };
+    }
+    if (t < T_JUMP) { // crouch, loading the hind legs
+      const q = easeOut((t - T_CROUCH) / (T_JUMP - T_CROUCH));
+      return { x: x0 + creep - creep * 0.2 * q, y: y0, r: 3 * q, sx: s0 * (1 + 0.05 * q), sy: s0 * (1 - 0.12 * q) };
+    }
+    if (t < T_LAND) { // the leap: arcs to the centre and grows as it comes forward
+      const u = (t - T_JUMP) / (T_LAND - T_JUMP), a = jump(u);
+      const release = Math.max(0, 1 - u * 5), stretch = Math.sin(Math.PI * a.k), sc = lerp(s0, 1, a.k);
+      return { x: a.x, y: a.y, r: lerp(3, heading(u), Math.min(1, u * 6)), sx: sc * (1 + 0.1 * stretch) * (1 + 0.05 * release), sy: sc * (1 - 0.06 * stretch) * (1 - 0.12 * release) };
+    }
+    // landing: absorb the impact and settle into the logo pose
+    const v = Math.min(1, (t - T_LAND) / (T_END - T_LAND));
+    const sq = v < .25 ? Math.sin(v / .25 * Math.PI / 2) : Math.cos((v - .25) / .75 * Math.PI / 2);
+    return { x: 0, y: 0, r: rLand * Math.exp(-5 * v) * Math.cos(v * 7), sx: 1 + 0.035 * sq, sy: 1 - 0.07 * sq };
+  }
+  const N = 140, path = [];
+  for (let i = 0; i <= N; i++) {
+    const p = pose(i / N * T_END);
+    path.push({ offset: i / N, transform: `translate(${p.x.toFixed(1)}px,${p.y.toFixed(1)}px) rotate(${p.r.toFixed(2)}deg) scale(${p.sx.toFixed(4)},${p.sy.toFixed(4)})` });
+  }
+  path[N].transform = 'translate(0px,0px) rotate(0deg) scale(1,1)';
+  const at = ms => ms / TT;
+
+  // 1 · the outline draws itself while the jaguar prowls on the left
+  A(svg, path, { duration: T_END, delay: D0, easing: 'linear' });
+  A(svg, [{ opacity: 0 }, { opacity: 1 }], { duration: 450, delay: D0, easing: 'ease-out' });
   strokes.forEach(s => {
     const big = s.len > maxLen * 0.35;
     A(s.p, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], {
-      duration: big ? 1400 : 520,
-      delay: big ? 120 : 420 + (s.x / 1680) * 820,
+      duration: big ? 950 : 450,
+      delay: D0 + (big ? 0 : 250 + (s.x / 1680) * 600),
       easing: 'cubic-bezier(.65,0,.35,1)'
     });
   });
-  // 3 · gold fill, outline fades, shine sweep
-  A(fill, [{ opacity: 0 }, { opacity: 1 }], { duration: 900, delay: 1250, easing: 'ease-out' });
-  A(strokesG, [{ opacity: 1 }, { opacity: 0 }], { duration: 800, delay: 1650, easing: 'ease-out' });
-  A(shine, [{ transform: 'skewX(-18deg) translateX(0px)' }, { transform: 'skewX(-18deg) translateX(2600px)' }], { duration: 1300, delay: 1650, easing: 'cubic-bezier(.45,0,.2,1)' });
-  A(glow, [{ filter: 'brightness(1)' }, { filter: 'brightness(1.9)' }, { filter: 'brightness(1)' }], { duration: 1200, delay: 1700, easing: 'ease-in-out' });
+  A(fill, [{ opacity: 0, offset: 0 }, { opacity: 0, offset: at(700) }, { opacity: .28, offset: at(T_JUMP) }, { opacity: .28, offset: at(T_LAND) }, { opacity: 1, offset: at(T_LAND + 350) }, { opacity: 1, offset: 1 }], { duration: TT, delay: D0, easing: 'linear' });
+  A(strokesG, [{ opacity: 1, offset: 0 }, { opacity: 1, offset: at(T_LAND) }, { opacity: 0, offset: at(T_LAND + 600) }, { opacity: 0, offset: 1 }], { duration: TT, delay: D0, easing: 'linear' });
+  // 2 · afterimages trail the leap
+  ghosts.forEach((g, i) => {
+    const lag = 55 * (i + 1);
+    A(g, path, { duration: T_END, delay: D0 + lag, easing: 'linear' });
+    A(g, [{ opacity: 0, offset: 0 }, { opacity: 0, offset: at(T_JUMP) }, { opacity: [.34, .2, .1][i], offset: at(T_JUMP + 150) }, { opacity: 0, offset: at(T_LAND + 80) }, { opacity: 0, offset: 1 }], { duration: TT, delay: D0 + lag, easing: 'linear' });
+  });
+  // 3 · landing: impact, light burst, hairline shockwave, shine sweep
+  const L = D0 + T_LAND;
+  A(stage, [{ transform: 'translate(0,0)' }, { transform: 'translate(0,5px)', offset: .15 }, { transform: 'translate(0,-3px)', offset: .4 }, { transform: 'translate(0,1px)', offset: .7 }, { transform: 'translate(0,0)' }], { duration: 420, delay: L, easing: 'ease-out' });
+  A(glow, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.5)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.08)', offset: .35 }, { opacity: .85, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 1400, delay: L - 60, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  A(glow, [{ filter: 'brightness(2.2)' }, { filter: 'brightness(1)' }], { duration: 900, delay: L, easing: 'ease-out' });
+  A(line, [{ transform: 'scaleX(0)', opacity: 0 }, { transform: 'scaleX(1)', opacity: 1 }], { duration: 900, delay: L - 20 });
+  A(shine, [{ transform: 'skewX(-18deg) translateX(0px)' }, { transform: 'skewX(-18deg) translateX(2600px)' }], { duration: 1200, delay: L + 150, easing: 'cubic-bezier(.45,0,.2,1)' });
   // 4 · wordmark
-  A(word, [{ letterSpacing: '.75em' }, { letterSpacing: '.34em' }], { duration: 1900, delay: 1350 });
-  letters.forEach((l, i) => A(l, [{ transform: 'translateY(110%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 950, delay: 1400 + i * 36 }));
-  A(tag, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 900, delay: 2050 });
+  A(word, [{ letterSpacing: '.75em' }, { letterSpacing: '.34em' }], { duration: 1800, delay: L + 100 });
+  letters.forEach((l, i) => A(l, [{ transform: 'translateY(110%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 950, delay: L + 150 + i * 34 }));
+  A(tag, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 900, delay: L + 750 });
 
   let exiting = false;
   const exit = () => {
@@ -886,7 +940,7 @@ function runIntro() {
     setTimeout(ready, 820);
     fly.onfinish = () => { target.style.opacity = '1'; intro.remove(); introDone = true; };
   };
-  const auto = setTimeout(exit, 3300);
+  const auto = setTimeout(exit, L + 1950);
   $('#introSkip').addEventListener('click', () => { clearTimeout(auto); exit(); });
   addEventListener('keydown', function k(e) { if (e.key === 'Escape' && !exiting) { clearTimeout(auto); exit(); removeEventListener('keydown', k); } });
 }
