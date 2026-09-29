@@ -1,0 +1,1472 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Jaguar Detailing: detailing automotriz profesional en Alajuela. Lavado premium, pulido, corrección de rayones y cerámico en parabrisas.">
+<!-- ARTIFACT:HEAD -->
+<title>Jaguar Detailing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Cormorant+Garamond:ital,wght@1,300;1,400;1,500&family=Cinzel:wght@400;500;600&display=swap">
+<style>
+/* Layout: showroom at night. A full-bleed black stage lit by gold light rigs; editorial type hugs the left, light and lacquer bleed right. */
+:root{
+  --ink:#060708;        /* piano-black stage */
+  --lacquer:#0d0f11;    /* raised panel */
+  --rule:#24272b;       /* hairline */
+  --pearl:#efe9dd;      /* primary text */
+  --smoke:#9d978c;      /* secondary text */
+  --gold:#d6a651;       /* brand gold */
+  --gold-hi:#f6e0a4;    /* specular */
+  --gold-lo:#8c611f;    /* shadowed gold */
+
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;  /* expanded, light: automotive */
+  --f-serif:"Cormorant Garamond","Times New Roman",Times,serif; /* italic accent */
+  --f-brand:"Cinzel","Trajan Pro",Georgia,serif;            /* the logo's roman caps */
+
+  --gutter:clamp(16px,4.2vw,64px);
+  --maxw:1360px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --ease-io:cubic-bezier(.77,0,.18,1);
+  --gold-grad:linear-gradient(100deg,var(--gold-lo) 0%,var(--gold) 28%,var(--gold-hi) 48%,var(--gold) 66%,var(--gold-lo) 100%);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:auto}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
+html.is-locked{overflow:hidden;animation:unlock 0s 9s forwards}
+@keyframes unlock{to{overflow:auto}}
+body{margin:0;background:var(--ink);color:var(--pearl);font:400 17px/1.65 var(--f-display);font-stretch:100%;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+main{overflow-x:clip}
+img,svg,canvas{display:block;max-width:100%}
+a{color:inherit}
+::selection{background:var(--gold);color:var(--ink)}
+:focus-visible{outline:1px solid var(--gold);outline-offset:4px}
+h1,h2,h3{margin:0;font-weight:inherit;text-wrap:balance}
+p{margin:0}
+ul,ol{margin:0;padding:0;list-style:none}
+[hidden]{display:none!important}
+
+.wrap{max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gutter)}
+.eyebrow{display:flex;align-items:center;gap:14px;font:600 12px/1 var(--f-brand);letter-spacing:.34em;text-transform:uppercase;color:var(--gold)}
+.eyebrow::before{content:"";width:36px;height:1px;background:currentColor;opacity:.7}
+.h2{font:250 clamp(2.2rem,5.2vw,4.8rem)/1.02 var(--f-display);font-stretch:118%;letter-spacing:-.025em}
+.h2 em,.serif{font-family:var(--f-serif);font-style:italic;font-weight:400;font-stretch:100%;letter-spacing:-.01em}
+.h2 em{font-size:1.1em;line-height:.9}
+.gold-text{background:var(--gold-grad);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 7s linear infinite}
+@keyframes sheen{from{background-position:120% 0}to{background-position:-100% 0}}
+.lead{font-size:clamp(1rem,1.25vw,1.15rem);color:var(--smoke);max-width:46ch}
+
+/* Buttons */
+.btn{--bx:0px;--by:0px;position:relative;display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:54px;padding:0 30px;font:600 12.5px/1 var(--f-display);font-stretch:112%;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;border:1px solid transparent;overflow:hidden;isolation:isolate;transform:translate(var(--bx),var(--by));transition:transform .5s var(--ease),border-color .4s,color .4s,background-color .4s;cursor:pointer}
+.btn svg{width:18px;height:18px;flex:none}
+.btn--gold{color:var(--ink);background:var(--gold-grad);background-size:200% 100%;background-position:30% 0}
+.btn--gold::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%);transition:transform .9s var(--ease);z-index:-1}
+.btn--gold:hover::after{transform:translateX(120%)}
+.btn--ghost{color:var(--pearl);border-color:rgba(214,166,81,.45);background:rgba(6,7,8,.25);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.btn--ghost:hover{border-color:var(--gold);color:var(--gold-hi)}
+
+/* Grain + progress */
+.grain{position:fixed;inset:-50%;z-index:90;pointer-events:none;opacity:.07;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");animation:grain 1.2s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+.progress{position:fixed;left:0;right:0;top:0;height:2px;z-index:80;pointer-events:none}
+.progress span{display:block;height:100%;background:var(--gold-grad);transform-origin:0 50%;transform:scaleX(0)}
+
+/* ============ INTRO ============ */
+.intro{display:none}
+.js .intro{display:block;position:fixed;inset:0;z-index:100;animation:introFailsafe .6s ease 8s forwards}
+@keyframes introFailsafe{to{opacity:0;visibility:hidden}}
+.intro__half{position:absolute;left:0;right:0;height:50.5%;background:var(--ink)}
+.intro__half--top{top:0;background:radial-gradient(120% 90% at 50% 100%,#12100c 0%,var(--ink) 60%)}
+.intro__half--bottom{bottom:0;background:radial-gradient(120% 90% at 50% 0%,#12100c 0%,var(--ink) 60%)}
+.intro__stage{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:clamp(18px,3vh,30px);padding-inline:var(--gutter)}
+.intro__glow{position:absolute;left:50%;top:46%;width:min(90vw,900px);aspect-ratio:2/1;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(214,166,81,.22),rgba(214,166,81,.06) 55%,transparent);opacity:0;pointer-events:none}
+.intro__mark{position:relative;width:min(78vw,640px);aspect-ratio:1680/615;transform-origin:0 0}
+.intro__mark svg{width:100%;height:100%;overflow:visible}
+.intro__strokes path{fill:none;stroke:var(--gold-hi);stroke-width:1.1;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:1;stroke-linecap:round}
+.intro__line{width:min(70vw,560px);height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0)}
+.intro__word{font:500 clamp(18px,3vw,30px)/1 var(--f-brand);letter-spacing:.34em;color:var(--pearl);display:flex;overflow:hidden;padding-bottom:4px;margin-right:-.34em}
+.intro__word .ch{display:inline-block;transform:translateY(110%)}
+.intro__tag{display:flex;align-items:center;gap:16px;font:500 11px/1 var(--f-brand);letter-spacing:.5em;color:var(--gold);opacity:0;margin-right:-.5em}
+.intro__tag i{width:44px;height:1px;background:currentColor;opacity:.6}
+.intro__skip{position:absolute;right:var(--gutter);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:none;border:0;color:var(--smoke);font:500 11px/1 var(--f-display);letter-spacing:.24em;text-transform:uppercase;padding:10px 0;cursor:pointer}
+.intro__skip:hover{color:var(--gold-hi)}
+.intro__place{position:absolute;left:var(--gutter);bottom:calc(24px + env(safe-area-inset-bottom,0px));font:500 11px/1 var(--f-brand);letter-spacing:.32em;color:var(--smoke);padding:10px 0}
+
+/* ============ NAV ============ */
+.nav{position:fixed;left:0;right:0;top:0;z-index:60;padding-top:env(safe-area-inset-top,0px);transition:transform .7s var(--ease),background-color .5s,border-color .5s;border-bottom:1px solid transparent}
+.nav__in{max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gutter);height:84px;display:flex;align-items:center;gap:28px}
+.nav.is-solid{background:rgba(6,7,8,.72);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);border-color:rgba(214,166,81,.14)}
+.nav.is-hidden{transform:translateY(-100%)}
+.nav__brand{display:flex;align-items:center;gap:14px;text-decoration:none;margin-right:auto}
+.nav__jag{width:74px;aspect-ratio:1680/615;height:auto}
+.js:not(.is-ready) .nav__jag{opacity:0}
+.nav__word{display:grid;line-height:1}
+.nav__word b{font:600 15px/1 var(--f-brand);letter-spacing:.3em;color:var(--pearl)}
+.nav__word small{font:500 8.5px/1 var(--f-brand);letter-spacing:.52em;color:var(--gold);margin-top:6px}
+.nav__links{display:flex;gap:34px}
+.nav__links a{position:relative;font:500 12px/1 var(--f-display);font-stretch:112%;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:var(--smoke);padding:10px 0;transition:color .3s}
+.nav__links a::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:1px;background:var(--gold);transform:scaleX(0);transform-origin:right;transition:transform .5s var(--ease)}
+.nav__links a:hover,.nav__links a.is-active{color:var(--pearl)}
+.nav__links a:hover::after,.nav__links a.is-active::after{transform:scaleX(1);transform-origin:left}
+.nav__cta{min-height:44px;padding:0 20px;font-size:11.5px}
+.nav__toggle{display:none;background:none;border:1px solid rgba(214,166,81,.4);color:var(--pearl);height:44px;padding:0 16px;font:600 11px/1 var(--f-display);letter-spacing:.22em;text-transform:uppercase;cursor:pointer}
+.js:not(.is-ready) .nav__word,.js:not(.is-ready) .nav__links,.js:not(.is-ready) .nav__cta,.js:not(.is-ready) .nav__toggle{opacity:0;transform:translateY(-8px)}
+.nav__word,.nav__links,.nav__cta,.nav__toggle{transition:opacity .9s var(--ease) .5s,transform .9s var(--ease) .5s}
+.menu{position:fixed;inset:0;z-index:55;background:rgba(6,7,8,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:grid;align-content:center;gap:10px;padding:120px var(--gutter) 60px}
+.menu a{font:250 clamp(2.2rem,11vw,3.4rem)/1.15 var(--f-display);font-stretch:118%;text-decoration:none;color:var(--pearl);border-bottom:1px solid var(--rule);padding-block:12px}
+.menu a em{font-family:var(--f-serif);color:var(--gold)}
+
+/* ============ HERO ============ */
+.hero{position:relative;min-height:100svh;overflow:hidden;background:radial-gradient(90% 70% at 75% 30%,#15120c,var(--ink) 70%)}
+.hero__gl{position:absolute;inset:0;width:100%;height:100%;opacity:.95}
+.hero__gl.is-off{display:none}
+.hero__shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(6,7,8,.85) 0%,rgba(6,7,8,.35) 45%,rgba(6,7,8,0) 70%),linear-gradient(0deg,var(--ink) 0%,rgba(6,7,8,0) 35%)}
+.hero__inner{position:relative;z-index:2;min-height:100svh;max-width:var(--maxw);margin-inline:auto;padding:130px var(--gutter) 36px;display:grid;grid-template-rows:1fr auto auto auto;gap:clamp(22px,3.4vh,40px);will-change:transform}
+.hero__eyebrow{align-self:end}
+.hero__title{font:200 clamp(2.9rem,11.2vw,11.5rem)/.88 var(--f-display);font-stretch:125%;letter-spacing:-.035em;text-transform:uppercase;margin-left:-.05em}
+.hero__title .line{display:block;overflow:hidden;padding-bottom:.06em}
+.hero__title .line>span{display:inline-block}
+.hero__title .l2{padding-left:clamp(0px,9vw,150px);text-transform:none;font-family:var(--f-serif);font-style:italic;font-weight:400;font-stretch:100%;letter-spacing:-.02em;font-size:1.08em;line-height:.92}
+.hero__foot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px 48px;align-items:end}
+.hero__actions{display:flex;flex-wrap:wrap;gap:14px}
+.hero__bar{display:flex;justify-content:space-between;align-items:center;gap:24px;padding-top:22px;border-top:1px solid rgba(214,166,81,.16)}
+.hero__scroll{display:flex;align-items:center;gap:14px;font:500 11px/1 var(--f-display);letter-spacing:.24em;text-transform:uppercase;color:var(--smoke)}
+.hero__scroll i{position:relative;width:1px;height:34px;background:var(--rule);overflow:hidden}
+.hero__scroll i::after{content:"";position:absolute;left:0;top:-40%;width:1px;height:40%;background:var(--gold);animation:drip 2.2s var(--ease-io) infinite}
+@keyframes drip{to{top:110%}}
+.hero__tags{display:flex;gap:0;font:500 11px/1 var(--f-display);font-stretch:112%;letter-spacing:.2em;text-transform:uppercase;color:var(--smoke)}
+.hero__tags li{padding-inline:18px;border-left:1px solid var(--rule)}
+.hero__tags li:first-child{border-left:0}
+.js:not(.is-ready) .hero__title .line>span{transform:translateY(108%)}
+.hero__title .line>span{transition:transform 1.5s var(--ease) calc(var(--i,0) * 140ms + 150ms)}
+.js:not(.is-ready) .hero__fade{opacity:0;transform:translateY(18px)}
+.hero__fade{transition:opacity 1.2s var(--ease) calc(var(--i,0) * 120ms + 450ms),transform 1.2s var(--ease) calc(var(--i,0) * 120ms + 450ms)}
+
+/* ============ MANIFESTO ============ */
+.manifesto{position:relative;height:260vh}
+.manifesto__sticky{position:sticky;top:0;height:100vh;height:100svh;display:grid;align-content:center;gap:36px;max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gutter)}
+.manifesto__text{font:250 clamp(1.7rem,4vw,3.6rem)/1.18 var(--f-display);font-stretch:110%;letter-spacing:-.02em;max-width:24ch;text-wrap:pretty}
+.manifesto__text .w{opacity:var(--o,.16);transition:opacity .25s linear}
+.manifesto__text em{font-family:var(--f-serif);font-style:italic;font-weight:400;font-stretch:100%;color:var(--gold);font-size:1.08em}
+.no-scrollfx .manifesto{height:auto;padding-block:18vh}
+.no-scrollfx .manifesto__sticky{position:static;height:auto}
+.no-scrollfx .manifesto__text .w{opacity:1}
+.manifesto__sign{display:flex;align-items:center;gap:18px;color:var(--smoke);font-size:14px}
+.manifesto__sign svg{width:64px}
+
+/* ============ SERVICES (pinned horizontal) ============ */
+.services{position:relative}
+.services__sticky{position:relative;display:flex;flex-direction:column;justify-content:center;gap:clamp(24px,5vh,56px);padding-block:clamp(90px,12vh,130px) clamp(40px,7vh,70px);overflow:hidden}
+.is-pinned .services__sticky{position:sticky;top:0;height:100vh;height:100svh}
+.services__head{display:flex;justify-content:space-between;align-items:end;gap:24px 40px;flex-wrap:wrap;width:100%}
+.services__head .h2{max-width:14ch}
+.services__meter{display:grid;gap:12px;min-width:200px;font:500 12px/1 var(--f-display);letter-spacing:.2em;color:var(--smoke);font-variant-numeric:tabular-nums}
+.services__meter b{color:var(--pearl);font-weight:500}
+.services__meter i{display:block;height:1px;background:var(--rule)}
+.services__meter i span{display:block;height:100%;background:var(--gold);transform-origin:0 50%;transform:scaleX(.25)}
+.services__track{display:flex;gap:clamp(16px,2vw,28px);padding-inline:var(--gutter) var(--gutter);will-change:transform;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x mandatory}
+.services__track::-webkit-scrollbar{display:none}
+.is-pinned .services__track{overflow:visible;scroll-snap-type:none;width:max-content;padding-left:max(var(--gutter),calc((100vw - var(--maxw))/2 + var(--gutter)))}
+.svc{--mx:50%;--my:30%;position:relative;flex:none;width:clamp(290px,31vw,470px);display:grid;grid-template-rows:auto 1fr;background:var(--lacquer);border:1px solid var(--rule);scroll-snap-align:start;overflow:hidden;transition:border-color .5s}
+.svc::before{content:"";position:absolute;inset:0;background:radial-gradient(420px circle at var(--mx) var(--my),rgba(246,224,164,.10),transparent 60%);opacity:0;transition:opacity .5s;pointer-events:none}
+.svc:hover{border-color:rgba(214,166,81,.45)}
+.svc:hover::before{opacity:1}
+.svc__art{position:relative;aspect-ratio:16/10;border-bottom:1px solid var(--rule);background:radial-gradient(80% 90% at 50% 100%,#17140e,#0a0b0d 70%);overflow:hidden}
+.svc__art svg{position:absolute;inset:0;width:100%;height:100%}
+.svc__body{display:grid;align-content:start;gap:14px;padding:clamp(22px,2.4vw,34px)}
+.svc__kicker{font:600 11px/1.4 var(--f-brand);letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+.svc h3{font:300 clamp(1.6rem,2.3vw,2.2rem)/1.05 var(--f-display);font-stretch:118%;letter-spacing:-.02em}
+.svc p{color:var(--smoke);font-size:15.5px;line-height:1.6}
+.svc__list{display:grid;gap:8px;padding-top:6px;font-size:14px;color:var(--pearl)}
+.svc__list li{display:flex;gap:12px;align-items:baseline}
+.svc__list li::before{content:"";flex:none;width:6px;height:6px;transform:rotate(45deg) translateY(-2px);border:1px solid var(--gold)}
+.svc--end{display:grid;align-content:space-between;gap:30px;padding:clamp(26px,3vw,40px);background:linear-gradient(160deg,#16120b,#0a0a0b 60%);border-color:rgba(214,166,81,.3);grid-template-rows:none}
+.svc--end h3{font-size:clamp(1.8rem,2.6vw,2.6rem)}
+.svc--end h3 em{font-family:var(--f-serif);font-style:italic;font-weight:400;font-stretch:100%;color:var(--gold)}
+/* service art animation */
+.art-stroke{fill:none;stroke:var(--gold);stroke-width:1;vector-effect:non-scaling-stroke}
+.art-dim{stroke:rgba(214,166,81,.28)}
+.bubble{fill:none;stroke:rgba(246,224,164,.7);stroke-width:1;vector-effect:non-scaling-stroke;animation:rise 5s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes rise{0%{transform:translateY(40px) scale(.6);opacity:0}15%{opacity:1}100%{transform:translateY(-150px) scale(1.1);opacity:0}}
+.spin{transform-box:fill-box;transform-origin:center;animation:spin 7s linear infinite}
+.spin--rev{animation-duration:11s;animation-direction:reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.orbit{transform-box:view-box;transform-origin:200px 125px;animation:spin 2.4s linear infinite}
+.sweep{animation:sweep 4.5s var(--ease-io) infinite}
+@keyframes sweep{0%{transform:translateX(-60px)}70%,100%{transform:translateX(480px)}}
+.scratch{stroke:rgba(239,233,221,.6);stroke-width:1;vector-effect:non-scaling-stroke}
+.bead{fill:rgba(246,224,164,.14);stroke:rgba(246,224,164,.8);stroke-width:1;vector-effect:non-scaling-stroke;animation:slide 3.6s cubic-bezier(.5,0,.9,.4) infinite;transform-box:fill-box}
+@keyframes slide{0%,35%{transform:translate(0,0);opacity:1}100%{transform:translate(-26px,120px);opacity:0}}
+
+/* ============ RESULTS (before / after) ============ */
+.results{padding-block:clamp(90px,16vh,180px) clamp(60px,10vh,120px)}
+.results__head{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px 64px;align-items:end;margin-bottom:clamp(36px,6vh,64px)}
+.results__head .eyebrow{grid-column:1/-1}
+.compare{--split:50%;position:relative;max-width:var(--maxw);margin-inline:auto;aspect-ratio:16/8;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:ew-resize;background:#050607;border:1px solid var(--rule)}
+.compare canvas{width:100%;height:100%}
+.compare__tag{position:absolute;top:18px;padding:8px 14px;font:600 11px/1 var(--f-brand);letter-spacing:.3em;text-transform:uppercase;background:rgba(6,7,8,.7);border:1px solid var(--rule);color:var(--pearl);pointer-events:none}
+.compare__tag--before{left:18px}
+.compare__tag--after{right:18px;color:var(--ink);background:var(--gold);border-color:var(--gold)}
+.compare__handle{position:absolute;top:0;bottom:0;left:var(--split);width:1px;background:linear-gradient(transparent,var(--gold-hi) 18%,var(--gold-hi) 82%,transparent);pointer-events:none}
+.compare__knob{position:absolute;top:50%;left:var(--split);width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;border:1px solid var(--gold);background:rgba(6,7,8,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;color:var(--gold-hi);cursor:ew-resize}
+.compare__knob svg{width:26px}
+.compare__knob:focus-visible{outline-offset:6px}
+.compare__note{max-width:var(--maxw);margin:16px auto 0;padding-inline:var(--gutter);font-size:13px;color:var(--smoke);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.compare-wrap{padding-inline:var(--gutter)}
+@media (hover:none){.compare__hint{display:none}}
+
+/* ============ GLASS (windshield ceramic) ============ */
+.glass{position:relative;padding-block:clamp(90px,14vh,170px);background:linear-gradient(180deg,var(--ink),#0b0a08 50%,var(--ink))}
+.glass__grid{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:clamp(36px,6vw,90px);align-items:center}
+.glass__copy{display:grid;gap:26px;align-content:start}
+.glass__copy .lead strong{color:var(--pearl);font-weight:500}
+.benefits{display:grid;grid-template-columns:1fr 1fr;gap:28px;padding-top:12px;border-top:1px solid var(--rule)}
+.benefits h3{font:600 11px/1.4 var(--f-brand);letter-spacing:.28em;text-transform:uppercase;color:var(--gold);padding-block:18px 14px}
+.benefits ul{display:grid;gap:10px;font-size:14.5px;color:var(--pearl)}
+.benefits li{display:grid;grid-template-columns:18px 1fr;gap:10px;line-height:1.45}
+.benefits li svg{width:14px;margin-top:3px;stroke:var(--gold);fill:none;stroke-width:1.5}
+.glass__visual{position:relative}
+.glass__frame{position:relative;aspect-ratio:5/4;border:1px solid var(--rule);background:#07080a;overflow:hidden;clip-path:polygon(7% 0,93% 0,100% 100%,0 100%);border-radius:0}
+.glass__frame canvas{width:100%;height:100%}
+.glass__labels{position:absolute;inset:auto 0 18px 0;display:flex;justify-content:space-between;padding-inline:9%;pointer-events:none}
+.glass__labels span{font:600 10.5px/1 var(--f-brand);letter-spacing:.28em;text-transform:uppercase;padding:8px 12px;background:rgba(6,7,8,.72);border:1px solid var(--rule)}
+.glass__labels span:last-child{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.result-card{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-top:22px;padding:20px 22px;border:1px solid rgba(214,166,81,.35);background:linear-gradient(120deg,rgba(214,166,81,.08),transparent 60%)}
+.result-card svg{width:40px;stroke:var(--gold);fill:none;stroke-width:1.2}
+.result-card p{font-size:15px;color:var(--pearl)}
+.result-card b{display:block;font:600 11px/1.4 var(--f-brand);letter-spacing:.28em;color:var(--gold);margin-bottom:4px}
+
+/* ============ PROCESS ============ */
+.process{padding-block:clamp(90px,14vh,170px)}
+.process__grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(36px,6vw,110px)}
+.process__aside{position:sticky;top:18vh;align-self:start;display:grid;gap:26px}
+.process__count{display:flex;align-items:baseline;gap:10px;font:200 clamp(5rem,12vw,11rem)/.8 var(--f-display);font-stretch:125%;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.process__count .num{display:inline-block;overflow:hidden;height:.82em}
+.process__count .num span{display:block}
+.process__count small{font:500 14px/1 var(--f-display);letter-spacing:.2em;color:var(--smoke)}
+.steps{position:relative;counter-reset:s}
+.steps__rail{position:absolute;left:0;top:0;bottom:0;width:1px;background:var(--rule)}
+.steps__rail span{position:absolute;inset:0;background:linear-gradient(var(--gold-hi),var(--gold));transform-origin:50% 0;transform:scaleY(0)}
+.step{position:relative;display:grid;grid-template-columns:72px 1fr;gap:10px;padding:clamp(28px,6vh,56px) 0 clamp(28px,6vh,56px) clamp(24px,3vw,44px);border-bottom:1px solid var(--rule);opacity:.38;transition:opacity .6s var(--ease)}
+.step:last-child{border-bottom:0}
+.step.is-active{opacity:1}
+.step::before{content:"";position:absolute;left:-4px;top:calc(clamp(28px,6vh,56px) + 10px);width:9px;height:9px;transform:rotate(45deg);background:var(--ink);border:1px solid var(--gold);transition:background-color .5s}
+.step.is-active::before{background:var(--gold)}
+.step__n{font:500 13px/1.9 var(--f-display);letter-spacing:.2em;color:var(--gold);font-variant-numeric:tabular-nums}
+.step h3{font:300 clamp(1.6rem,2.6vw,2.4rem)/1.1 var(--f-display);font-stretch:118%;letter-spacing:-.02em;margin-bottom:12px}
+.step p{color:var(--smoke);max-width:48ch}
+.no-scrollfx .step{opacity:1}
+
+/* ============ BRANDS MARQUEE ============ */
+.brands{padding-block:clamp(60px,10vh,110px);border-block:1px solid var(--rule);overflow:hidden}
+.brands .eyebrow{justify-content:center;margin-bottom:clamp(26px,5vh,44px)}
+.brands .eyebrow::after{content:"";width:36px;height:1px;background:currentColor;opacity:.7}
+.marquee{display:flex;white-space:nowrap;will-change:transform}
+.marquee__set{display:flex;align-items:center;flex:none}
+.marquee__item{font:200 clamp(3rem,9vw,8.5rem)/1 var(--f-display);font-stretch:125%;letter-spacing:-.03em;text-transform:uppercase;padding-inline:clamp(18px,3vw,44px)}
+.marquee__item.o{color:transparent;-webkit-text-stroke:1px rgba(214,166,81,.7)}
+.marquee__item.s{font-family:var(--f-serif);font-style:italic;font-weight:300;text-transform:none;font-stretch:100%;color:var(--gold)}
+.marquee__dot{flex:none;width:12px;height:12px;transform:rotate(45deg);border:1px solid var(--gold)}
+.marquee--rev .marquee__item{font-size:clamp(1.4rem,3vw,2.6rem);color:var(--smoke)}
+.marquee--rev{margin-top:clamp(12px,2vh,24px)}
+
+/* ============ CTA / CONTACT ============ */
+.cta{position:relative;padding-block:clamp(100px,16vh,190px) clamp(80px,12vh,140px);overflow:hidden}
+.cta__jag{position:absolute;right:-6vw;top:clamp(40px,8vh,90px);width:min(78vw,1100px);aspect-ratio:1680/615;opacity:.09;pointer-events:none;will-change:transform}
+.cta__grid{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr);gap:clamp(40px,6vw,96px);align-items:start}
+.cta__copy{display:grid;gap:28px}
+.contact{display:grid;gap:0;border-top:1px solid var(--rule)}
+.contact__row{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 16px;align-items:center;min-height:64px;padding-block:14px;border-bottom:1px solid var(--rule)}
+.contact__row dt{font:600 10.5px/1.4 var(--f-brand);letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
+.contact__row dd{margin:0;font-size:17px;min-width:0;overflow-wrap:anywhere;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.contact__row dd a{text-decoration:none;border-bottom:1px solid rgba(214,166,81,.4)}
+.contact__row dd a:hover{color:var(--gold-hi)}
+.copy{background:none;border:1px solid var(--rule);color:var(--smoke);font:600 10.5px/1 var(--f-display);letter-spacing:.2em;text-transform:uppercase;padding:10px 12px;cursor:pointer}
+.copy:hover{color:var(--pearl);border-color:var(--gold)}
+.tel{font-variant-numeric:tabular-nums;user-select:all;-webkit-user-select:all}
+.booking{position:relative;display:grid;gap:22px;padding:clamp(24px,3vw,40px);background:linear-gradient(170deg,#121008,var(--lacquer) 55%);border:1px solid rgba(214,166,81,.28)}
+.booking h3{font:300 clamp(1.5rem,2.2vw,2rem)/1.1 var(--f-display);font-stretch:118%}
+.booking fieldset{border:0;margin:0;padding:0;display:grid;gap:12px}
+.booking legend,.field label{font:600 10.5px/1.4 var(--f-brand);letter-spacing:.28em;text-transform:uppercase;color:var(--gold);padding:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.chip span{display:inline-block;padding:10px 14px;border:1px solid var(--rule);font-size:13.5px;color:var(--smoke);transition:all .3s}
+.chip input:checked+span{border-color:var(--gold);color:var(--ink);background:var(--gold)}
+.chip input:focus-visible+span{outline:1px solid var(--gold);outline-offset:3px}
+.field{display:grid;gap:10px}
+.field input{width:100%;background:transparent;border:0;border-bottom:1px solid var(--rule);color:var(--pearl);font:400 17px/1.4 var(--f-display);padding:10px 0;border-radius:0}
+.field input::placeholder{color:#5f5b54}
+.field input:focus{outline:none;border-color:var(--gold)}
+.booking__preview{font-size:13.5px;color:var(--smoke);border-left:1px solid var(--gold);padding-left:14px;line-height:1.55}
+.booking .btn{width:100%}
+
+/* ============ FOOTER ============ */
+.foot{position:relative;padding-top:clamp(60px,10vh,100px);border-top:1px solid var(--rule);overflow:hidden}
+.foot__top{display:flex;justify-content:space-between;align-items:start;gap:30px;flex-wrap:wrap}
+.foot__tag{font-family:var(--f-serif);font-style:italic;font-size:clamp(1.4rem,2.4vw,2rem);line-height:1.2;max-width:22ch}
+.foot__links{display:flex;gap:28px;flex-wrap:wrap;font:500 12px/1 var(--f-display);letter-spacing:.2em;text-transform:uppercase}
+.foot__links a{text-decoration:none;color:var(--smoke)}
+.foot__links a:hover{color:var(--gold-hi)}
+.foot__word{font:500 clamp(3.2rem,15.5vw,16rem)/.8 var(--f-brand);letter-spacing:.06em;text-align:center;margin-top:clamp(40px,8vh,90px);white-space:nowrap;transform:translateY(12%);user-select:none}
+.foot__legal{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:18px calc(22px + env(safe-area-inset-bottom,0px));font-size:12.5px;color:var(--smoke);border-top:1px solid var(--rule);position:relative;background:var(--ink)}
+
+/* Floating WhatsApp */
+.fab{position:fixed;right:clamp(14px,2.4vw,30px);bottom:calc(clamp(14px,2.4vw,30px) + env(safe-area-inset-bottom,0px));z-index:50;display:flex;align-items:center;gap:10px;height:56px;padding:0 20px 0 16px;border-radius:999px;background:rgba(6,7,8,.8);border:1px solid rgba(214,166,81,.55);color:var(--pearl);text-decoration:none;font:600 11.5px/1 var(--f-display);letter-spacing:.18em;text-transform:uppercase;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .6s var(--ease),opacity .6s,border-color .3s}
+.fab svg{width:22px;height:22px;stroke:var(--gold);fill:none;stroke-width:1.4}
+.fab:hover{border-color:var(--gold-hi)}
+.js:not(.is-ready) .fab,.fab.is-away{opacity:0;transform:translateY(20px);pointer-events:none}
+
+/* Scroll reveal */
+.js .reveal{opacity:0;transform:translateY(34px);transition:opacity 1.1s var(--ease) var(--d,0ms),transform 1.1s var(--ease) var(--d,0ms)}
+.js .reveal.in{opacity:1;transform:none}
+.js .reveal-mask{clip-path:inset(0 0 100% 0);transform:translateY(30px);transition:clip-path 1.3s var(--ease) var(--d,0ms),transform 1.3s var(--ease) var(--d,0ms)}
+.js .reveal-mask.in{clip-path:inset(0 0 -10% 0);transform:none}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:1020px){
+  .nav__links{display:none}
+  .nav__toggle{display:inline-flex;align-items:center}
+  .results__head,.glass__grid,.cta__grid,.process__grid{grid-template-columns:minmax(0,1fr)}
+  .process__aside{position:relative;top:0}
+  .process__count{font-size:clamp(4rem,20vw,7rem)}
+}
+@media (max-width:720px){
+  body{font-size:16px}
+  .nav__in{height:70px;gap:12px}
+  .nav__jag{width:58px}
+  .nav__word b{font-size:13px}
+  .nav__cta{display:none}
+  .hero__inner{padding-top:110px;gap:22px}
+  .hero__foot{grid-template-columns:minmax(0,1fr)}
+  .hero__tags{display:none}
+  .hero__actions .btn{flex:1 1 auto}
+  .svc{width:84vw}
+  .compare{aspect-ratio:4/5}
+  .benefits{grid-template-columns:minmax(0,1fr)}
+  .step{grid-template-columns:minmax(0,1fr);gap:4px}
+  .contact__row{grid-template-columns:minmax(0,1fr)}
+  .fab span{display:none}
+  .fab{padding:0;width:56px;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .grain{animation:none}
+}
+</style>
+<!-- /ARTIFACT:HEAD -->
+</head>
+<body>
+<!-- ARTIFACT:BODY -->
+<script>document.documentElement.classList.add('js');document.documentElement.lang='es'</script>
+
+<!-- Brand sprite: the jaguar, vectorized from the logo -->
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
+  <defs>
+    <path id="jag" fill-rule="evenodd" clip-rule="evenodd" d="M 1213.7 35.1 C 1209.9 35.6, 1201.8 37.3, 1195.7 39 C 1189.5 40.7, 1181.6 42.7, 1178.1 43.5 C 1174.7 44.3, 1170.8 45.6, 1169.6 46.4 C 1168.4 47.1, 1162.5 49.4, 1156.5 51.5 C 1150.4 53.6, 1144.1 56.1, 1142.5 57.1 C 1140.8 58.1, 1138.8 58.9, 1138 58.9 C 1136.1 58.9, 1121.4 63.4, 1113.2 66.6 C 1109.7 67.9, 1105.6 69, 1104 69 C 1099.8 69, 1085.8 76.3, 1076 83.5 C 1072.9 85.8, 1069.3 88.2, 1068 88.9 C 1066.6 89.7, 1064.9 91.1, 1064.1 92.1 C 1063.4 93.1, 1062.3 94, 1061.7 94 C 1060.5 94, 1051.5 99.4, 1048.5 102 C 1047.4 103, 1045.4 104, 1044.1 104.4 C 1042.8 104.8, 1040.2 106.2, 1038.2 107.5 C 1036.3 108.8, 1032.4 111, 1029.6 112.3 C 1026.8 113.7, 1020.1 116.8, 1014.8 119.4 C 1009.5 121.9, 1003.9 124, 1002.3 124 C 1000.7 124, 997.9 124.9, 996 126.1 C 992.7 128.1, 990.4 128.9, 978 132 C 975.5 132.6, 969.4 134.4, 964.5 136 C 959.5 137.5, 952.5 139.1, 949 139.5 C 945.4 139.8, 939.8 140.7, 936.5 141.5 C 933.2 142.2, 925.7 143.3, 920 143.9 C 914.3 144.6, 907.1 145.7, 904 146.4 C 900.9 147.2, 893.5 148.1, 887.5 148.5 C 871 149.5, 869.7 149.6, 854.2 151.9 C 846.3 153, 835.7 154, 830.5 154 C 825.4 154, 813.4 155, 803.8 156.4 C 794.3 157.7, 778.4 159.1, 768.5 159.5 C 757.1 159.9, 749.2 160.6, 747.2 161.5 C 745.1 162.4, 737.8 163, 726.7 163.4 C 699.4 164.2, 685.7 165.1, 682 166.1 C 680 166.6, 671.7 167.7, 663.4 168.4 C 654.5 169.2, 646.6 170.5, 644.4 171.4 C 642.2 172.4, 637.1 173.7, 633 174.5 C 625.1 175.9, 615.3 179, 610.9 181.4 C 609.4 182.2, 606.1 183.3, 603.4 183.9 C 600.7 184.5, 596.4 185.8, 594 186.8 C 583.7 191.1, 575.8 194, 574.2 194 C 573.2 194, 570.3 195.1, 567.7 196.5 C 565.2 197.8, 562.5 199, 561.7 199 C 561 199, 558.2 200.1, 555.5 201.4 C 552.7 202.8, 549.5 203.9, 548.3 203.9 C 547.2 203.9, 544.6 205, 542.7 206.3 C 540.8 207.7, 537.7 209.1, 535.8 209.4 C 534 209.8, 531.5 210.7, 530.4 211.5 C 529.2 212.2, 526.3 213.3, 523.9 214 C 521.5 214.6, 518.4 216, 517.1 217 C 515.8 218.1, 513.7 219, 512.5 219 C 511.2 219, 508.2 220, 505.8 221.3 C 503.3 222.6, 500.2 224, 498.9 224.5 C 497.5 224.9, 495.4 226.1, 494.1 227.1 C 492.8 228.1, 491 229, 490.2 229 C 489.3 229, 484.6 230.9, 479.6 233.3 C 474.5 235.7, 468.8 238.2, 466.8 238.8 C 464.8 239.5, 462.4 240.9, 461.4 242 C 460.4 243.1, 458.9 244, 458 244 C 457.2 244, 454.2 245.1, 451.5 246.4 C 448.7 247.8, 445.9 248.9, 445.3 248.9 C 444.6 248.9, 442.8 250, 441.3 251.3 C 439.7 252.6, 436.9 254, 435 254.5 C 433 254.9, 430.4 256.1, 429.1 257.1 C 427.8 258.1, 426.1 259, 425.5 259 C 424.8 259, 422.6 260, 420.7 261.3 C 418.8 262.7, 415.8 264, 414.1 264.4 C 412.5 264.8, 410.6 265.7, 409.9 266.5 C 409.3 267.2, 407.1 268.4, 405.1 269 C 403.1 269.7, 400.8 270.8, 400 271.5 C 399.1 272.2, 397.1 273.1, 395.5 273.5 C 393.8 273.9, 390.9 275.2, 389 276.5 C 387 277.8, 381.9 280.3, 377.5 282 C 373.1 283.7, 368.6 286, 367.5 286.9 C 366.4 287.9, 363.9 289.1, 362 289.5 C 360 289.8, 357.1 291, 355.5 291.9 C 353.8 292.9, 351.3 294.1, 350 294.5 C 348.6 294.9, 346.4 296.1, 345.1 297.1 C 343.8 298.1, 341.5 299, 340.1 299 C 338.6 299, 335.7 300.1, 333.5 301.4 C 331.3 302.8, 328.8 303.9, 327.9 303.9 C 327.1 303.9, 324.3 305.1, 321.7 306.5 C 319.2 307.8, 316 309, 314.7 309 C 313.5 309, 309.8 310.3, 306.5 312 C 303.2 313.6, 299.9 314.9, 299.3 314.9 C 298.7 314.9, 296.2 315.8, 293.8 316.9 C 291.4 318, 288.3 318.9, 286.8 318.9 C 285.4 318.9, 282.1 320.1, 279.6 321.4 C 277 322.8, 273 324.2, 270.7 324.5 C 268.3 324.9, 263.9 326, 260.7 327 C 257.5 328.1, 254 329, 252.8 329 C 251.6 329, 248.1 330.2, 245 331.6 C 240.3 333.9, 237.7 334.4, 228.5 334.7 C 221.3 335, 216.4 335.7, 214.5 336.7 C 212.8 337.6, 207.4 338.7, 202.5 339.1 C 187.5 340.5, 174.5 341.8, 173 342.1 C 167.9 343, 134 339.3, 126.5 336.9 C 123.2 335.9, 118.7 334.8, 116.5 334.5 C 114.3 334.1, 110.6 332.7, 108.3 331.4 C 106 330, 103.6 329, 103.1 329 C 102 329, 96.8 325.8, 90.6 321.2 C 84.6 316.9, 76.3 308.4, 74.3 304.5 C 73.3 302.6, 70.9 298.2, 69 294.7 L 65.5 288.5 65.6 274.3 L 65.7 260.2 69 254.3 C 73.5 246.5, 76.5 242.1, 79.9 238.5 C 85.1 232.8, 94.7 224.1, 98.6 221.5 C 114.1 211, 119.9 204.5, 116.6 201.2 C 114.3 198.9, 88.6 203.1, 84.9 206.5 C 84 207.3, 81.8 208.5, 79.9 209.1 C 69.3 212.8, 51.5 229.1, 44.9 241.4 C 44.5 242, 43.5 243.8, 42.6 245.5 C 33.5 261.6, 30.6 278.3, 33.5 296.7 C 35.3 308.6, 37.4 314, 43.7 323.5 C 45.2 325.8, 47.4 329, 48.5 330.7 C 52.1 336.1, 66.1 347, 74.4 350.7 C 76.1 351.4, 78.1 352.6, 78.9 353.4 C 79.8 354.1, 82 355.1, 84 355.5 C 85.9 355.9, 89 357, 91 357.9 C 92.9 358.9, 96.3 360, 98.5 360.4 C 100.7 360.8, 104.9 361.9, 108 362.9 C 113 364.6, 147 367.1, 162 366.9 C 182 366.7, 224.9 361.5, 231.7 358.4 C 233.5 357.6, 238.9 356.3, 243.7 355.5 C 248.5 354.7, 253.8 353.4, 255.5 352.5 C 257.1 351.7, 259.2 351, 260 351 C 260.9 351, 264.8 349.9, 268.6 348.6 C 272.5 347.3, 277.6 345.9, 280 345.4 C 282.5 345, 286.1 343.9, 288.2 342.8 C 290.2 341.8, 292.5 340.9, 293.2 340.9 C 293.9 340.9, 296.7 339.8, 299.5 338.5 C 302.2 337.1, 305.6 336, 307.1 336 C 308.5 336, 311.3 334.8, 313.3 333.5 C 315.3 332.2, 318.6 330.7, 320.7 330.4 C 322.7 330, 326 328.8, 327.9 327.8 C 329.9 326.8, 332.1 326, 333 326 C 333.8 326, 336.1 324.9, 338 323.6 C 339.9 322.3, 343 320.9, 345 320.5 C 346.9 320.1, 352.5 317.8, 357.5 315.5 C 362.4 313.2, 367.5 310.9, 368.9 310.5 C 370.2 310, 375.1 307.7, 379.7 305.3 C 384.4 302.9, 389 301, 389.9 301 C 390.9 301, 393.3 299.8, 395.4 298.5 C 397.4 297.1, 399.3 296, 399.6 296 C 400.3 296, 422.9 285.2, 425 283.9 C 425.8 283.3, 428 282.2, 429.9 281.3 C 431.8 280.4, 434.5 278.9, 435.8 277.8 C 437.1 276.8, 438.9 275.9, 439.8 275.9 C 440.7 275.9, 444.8 274.1, 449 271.9 C 453.1 269.8, 457.6 267.5, 459 266.9 C 465.2 264.1, 467.6 262.9, 469 262 C 469.8 261.4, 473.8 259.4, 478 257.4 C 482.1 255.4, 486.6 253.2, 488 252.5 C 489.3 251.7, 495.2 248.9, 501 246.1 C 506.7 243.4, 516.4 238.8, 522.5 236 C 534.9 230, 544.4 225.6, 551 222.7 C 553.4 221.5, 556.6 220, 558 219.2 C 559.3 218.5, 562 217.2, 564 216.4 C 565.9 215.6, 568.6 214.2, 570.1 213.4 C 578.1 209, 576.4 212.3, 564.4 224.6 C 558.5 230.6, 552.6 237, 551.1 239 C 549.7 240.9, 546.4 245, 544 248.1 C 536.7 257.2, 533.7 261.4, 530.5 266.9 C 529.4 268.7, 527.5 271.4, 526.3 272.8 C 525.2 274.3, 522.9 277.9, 521.4 281 C 519.8 284, 517.5 287.7, 516.3 289.3 C 515 290.8, 514 292.9, 514 293.9 C 514 294.9, 513.1 296.8, 512 298.2 C 510.9 299.6, 508.4 303.9, 506.4 307.8 C 504.4 311.8, 502.3 315.2, 501.9 315.5 C 501.4 315.8, 498.9 320.3, 496.5 325.4 C 494 330.6, 491.6 335.1, 491 335.4 C 490.5 335.7, 488.6 338.6, 486.8 341.7 C 485.1 344.9, 482.7 348.7, 481.5 350.1 C 480.4 351.6, 477.4 355.6, 475 358.9 C 471.3 363.9, 465.1 370.9, 458.5 377.8 C 455.4 380.9, 445.8 389, 445.1 389 C 444.6 389, 443.1 390, 441.8 391.3 C 439 394.2, 418.9 404.9, 416.3 405 C 415.3 405, 412.2 406.1, 409.5 407.5 C 406.7 408.8, 403.6 409.9, 402.5 410 C 401.4 410, 397.7 410.8, 394.4 411.9 C 390.3 413.2, 382.5 414.1, 370.4 414.9 C 338.7 416.9, 338.4 417, 321.7 437.5 C 317.2 443, 311.5 449.9, 308.9 453 C 306.4 456, 302.6 460.8, 300.5 463.7 C 298.5 466.6, 296.4 469, 295.9 469 C 295.5 469, 294.1 470.5, 292.9 472.5 C 291.7 474.4, 289.4 477.7, 287.6 479.9 C 285.9 482.1, 283.1 485.7, 281.5 488 C 278.3 492.4, 265.9 508.2, 261.5 513.5 C 247.7 529.6, 239.4 537.5, 235 538.6 C 233.6 539, 230.8 540.1, 228.7 541.1 C 224.1 543.4, 212.9 543.6, 209.6 541.5 C 207.3 540, 201.2 538.4, 193.5 537.3 C 189.9 536.8, 188.9 537.2, 184.7 540.5 C 182.1 542.5, 180 544.5, 180 544.9 C 180 545.3, 178 548.4, 175.7 551.9 C 169.1 561.7, 169 562, 169 569.5 C 169 584.9, 176.7 588.3, 204.5 585.4 C 215.5 584.2, 217.1 583.8, 225.4 579.5 C 230.3 577, 235 575, 235.8 575 C 236.6 575, 238 574.4, 238.9 573.6 C 239.7 572.9, 243.4 570.6, 247 568.5 C 255.2 563.6, 261.8 557.2, 271.6 544.7 C 287.4 524.6, 309.3 502.8, 323.4 493 C 325.4 491.6, 328.6 489.3, 330.5 488 C 346.5 476.2, 355.8 470.2, 360.5 468.6 C 376.7 462.8, 387.9 462.2, 431 464.3 C 486.2 467, 512.6 465.5, 539 457.9 C 542.5 456.9, 547.3 455.6, 549.5 455 C 551.7 454.5, 555.2 453.1, 557.4 452 C 559.6 450.9, 562.1 450, 563 450 C 563.9 450, 565.8 449.1, 567.1 448.1 C 568.4 447.1, 571.7 445.1, 574.5 443.7 C 577.2 442.3, 581.2 439.8, 583.3 438.1 C 585.5 436.3, 587.7 435, 588.2 435 C 589.1 435, 590.9 433.5, 606.5 420.1 C 615.4 412.4, 627.1 400, 635.4 389.5 C 638.4 385.6, 641.7 381.6, 642.7 380.5 C 643.8 379.4, 646.1 375.9, 647.8 372.7 C 649.6 369.6, 651.5 366.7, 652 366.4 C 653.1 365.7, 660 355.5, 660 354.5 C 660 354.1, 661.2 352.2, 662.7 350.4 C 664.2 348.6, 666.6 345.2, 668 342.9 C 669.3 340.5, 671.4 337.6, 672.5 336.3 C 673.6 335, 675.8 332.1, 677.5 329.9 C 692.9 309.1, 724.9 277.6, 727.7 280.4 C 728.1 280.7, 727.6 282.3, 726.6 283.9 C 723 290.1, 725.4 293.4, 731.4 290.6 C 733.2 289.7, 735.4 289, 736.2 289 C 737 289, 738.9 288, 740.4 286.8 C 743.5 284.4, 766.8 281.5, 780.5 281.8 C 797.3 282.1, 820.6 284.6, 826.5 286.7 C 829.8 287.8, 835.4 289.3, 839 289.9 C 842.5 290.5, 847.1 291.7, 849.2 292.5 C 851.3 293.3, 855.3 294, 858.1 294 C 861.6 294, 863.9 294.5, 865.7 296 C 870.9 300.1, 885.2 297.7, 885.8 292.6 C 886.2 289.2, 888.3 289.6, 888.8 293.2 C 889 295, 888.4 296.2, 887 296.9 C 882.2 299.5, 884.6 301.7, 893.8 303.5 C 897.5 304.2, 903.2 305.5, 906.5 306.5 C 909.8 307.5, 914.9 308.4, 918 308.5 C 921 308.6, 925.9 309.5, 929 310.4 C 932 311.4, 938.5 312.8, 943.5 313.6 C 948.4 314.4, 956.3 315.9, 961 316.9 C 976.1 320.2, 1037.8 320.3, 1045.1 316.9 C 1047.5 315.9, 1050.4 315, 1051.5 315 C 1052.6 315, 1055.2 314.1, 1057.2 313 C 1059.2 311.9, 1062.9 310.5, 1065.2 310 C 1070.9 308.7, 1090.9 295.8, 1098 288.8 C 1106.5 280.4, 1115 270.4, 1115 268.7 C 1115 267.9, 1115.8 266.5, 1116.9 265.5 C 1118 264.5, 1119.1 262.3, 1119.5 260.6 C 1119.9 258.9, 1121 256.1, 1122 254.4 C 1123 252.7, 1124.5 248.5, 1125.3 244.9 C 1127.8 233.9, 1131.1 223.6, 1133.1 221.1 C 1134.1 219.8, 1135 217.8, 1135 216.7 C 1135 215.6, 1136.3 213.2, 1138 211.3 C 1139.6 209.4, 1141 207.5, 1141 207 C 1141 204.1, 1151.4 191.5, 1153.2 192.2 C 1157 193.7, 1155.7 236.6, 1151.4 250.6 C 1150.6 253.3, 1150 257.1, 1150 259.1 C 1150 261.1, 1148.7 266.5, 1147.1 271.1 C 1145.5 275.7, 1143.2 284.2, 1142 290 C 1140.8 295.7, 1138.7 302.8, 1137.3 305.7 C 1136 308.5, 1134.6 312.6, 1134.3 314.7 C 1133.9 316.7, 1132.8 320.1, 1131.8 322.2 C 1127.7 330.4, 1129.6 340.5, 1136.6 347 C 1144 353.8, 1144.6 354.1, 1152.3 355.1 C 1156.4 355.6, 1161.6 356.6, 1163.8 357.4 C 1165.9 358.2, 1173.5 359.1, 1180.6 359.5 C 1187.7 359.9, 1198.4 361, 1204.5 362 C 1210.5 363, 1221.3 364.3, 1228.5 364.9 C 1235.6 365.6, 1243.2 366.7, 1245.3 367.5 C 1247.4 368.3, 1255.2 369.4, 1262.8 370 C 1270.3 370.6, 1278.9 371.5, 1282 372 C 1293.5 374, 1303 374.8, 1319 375.3 C 1331 375.6, 1337.8 376.3, 1344 377.9 C 1348.6 379, 1355.2 379.9, 1358.5 380 C 1361.8 380, 1370.1 380.9, 1377 382 C 1383.8 383.1, 1393.3 384.5, 1398 385 C 1402.6 385.5, 1408.7 386.6, 1411.4 387.5 C 1414.1 388.4, 1418.8 389.5, 1421.7 390 C 1432.1 391.7, 1447.3 402.5, 1455.4 414 C 1456.7 415.9, 1459.5 419.9, 1461.6 422.8 C 1466.5 430, 1480.1 443.5, 1484.2 445.4 C 1486 446.2, 1489.5 448.5, 1492 450.4 C 1497.4 454.6, 1505.6 459.4, 1509 460.4 C 1510.3 460.8, 1512.1 461.7, 1513 462.4 C 1519.8 468, 1532.3 471.9, 1537.1 469.9 C 1542.5 467.7, 1545.2 456.4, 1541.9 450.1 C 1539.5 445.4, 1539.7 444.4, 1543.2 445.4 C 1548.9 447, 1554.1 459.8, 1551.9 466.9 C 1551.3 468.9, 1555.5 469.5, 1557.6 467.9 C 1559.9 465.9, 1566.1 456.2, 1567.5 452.1 C 1570.2 444.7, 1568.5 438.8, 1561.3 430.6 C 1556.6 425.3, 1554.4 424.4, 1537 420.5 C 1530.1 418.9, 1522.9 416.9, 1521 416 C 1519 415, 1516.3 414, 1514.9 413.6 C 1508.8 412.2, 1497.8 402.3, 1485 387 C 1475.7 375.7, 1462.3 362.2, 1458.7 360.3 C 1456.9 359.4, 1454.6 357.9, 1453.5 356.9 C 1451.6 355.3, 1438.1 349, 1436.3 348.9 C 1435.8 348.9, 1433.2 347.8, 1430.5 346.4 C 1427.7 345.1, 1424.3 344, 1423 344 C 1420.2 343.9, 1405 340, 1394 336.4 C 1389.8 335, 1384.7 333.9, 1382.5 333.9 C 1377.9 333.9, 1375.6 333.3, 1361.5 328.9 C 1356 327.2, 1348.6 325.2, 1345.2 324.5 C 1341.8 323.8, 1337.9 322.5, 1336.5 321.6 C 1335.2 320.7, 1331.2 319.3, 1327.8 318.6 C 1319.5 316.7, 1312.7 314.4, 1306.4 311.4 C 1303.5 310, 1300.6 309, 1299.7 309 C 1298.9 309, 1294 307.3, 1288.8 305.3 C 1283.7 303.4, 1277.4 301.1, 1275 300.3 C 1272.5 299.5, 1268.7 298, 1266.5 296.9 C 1259 293.3, 1250.5 290.9, 1242 290 C 1224.7 288.1, 1222.4 287.6, 1218.7 285.8 C 1214 283.5, 1214 282.6, 1218.6 278.6 C 1220.6 276.9, 1224 273.7, 1226.2 271.6 C 1233.7 264.5, 1246 260.3, 1251.3 263.1 C 1254.5 264.8, 1255 266, 1254.3 271.7 C 1253.4 279.3, 1254.3 280, 1265.1 280 C 1277.5 280, 1281.9 278, 1289.2 269 C 1292.2 265.3, 1295.1 261.2, 1295.5 259.8 C 1295.9 258.5, 1297 256.6, 1297.9 255.5 C 1298.8 254.4, 1300.8 251, 1302.2 248 C 1303.6 244.9, 1306 239.8, 1307.4 236.6 C 1308.9 233.5, 1310.5 227.8, 1311 224.1 C 1311.5 220.5, 1312.3 216, 1312.9 214.2 C 1314.8 207.6, 1315.3 183, 1313.7 175 C 1312.8 170.8, 1311.9 164.1, 1311.5 160 C 1311 154.6, 1310.2 151.4, 1308.5 148.8 C 1307.2 146.8, 1305.8 143.5, 1305.4 141.5 C 1304.2 135.1, 1300.5 129.9, 1289.4 119 C 1273.8 103.5, 1268.4 94.2, 1270.9 87.5 C 1272.1 84.4, 1273.3 84.3, 1278.6 87.4 C 1280.9 88.7, 1284.4 90.3, 1286.4 90.9 C 1292.7 93, 1314 116.1, 1314 120.8 C 1314 121.2, 1315.1 123.1, 1316.5 125 C 1317.8 126.8, 1319 129.3, 1319 130.5 C 1319 131.6, 1320 134, 1321.4 135.8 C 1322.7 137.6, 1324.1 140.7, 1324.4 142.7 C 1324.8 144.7, 1325.8 147.7, 1326.6 149.3 C 1327.4 150.9, 1328.5 155.8, 1328.9 160.2 C 1329.8 168.5, 1331 170.5, 1334.1 168.9 C 1335.7 168, 1336.8 165.9, 1342.8 152.9 C 1344 150.4, 1345.4 145.2, 1345.9 141.4 C 1347.3 131.6, 1349.4 123.6, 1350.7 123.2 C 1353.8 122.2, 1362.6 138.1, 1364.1 147.4 C 1366.1 160.7, 1366.1 160.7, 1391.5 161.3 C 1411.3 161.8, 1430.9 164.8, 1438.1 168.5 C 1442.3 170.7, 1445.2 169.7, 1448.4 164.9 C 1453 157.8, 1454.3 159.5, 1454.4 173 C 1454.4 183.3, 1454.7 184.8, 1456.7 187.7 C 1458 189.4, 1459.4 193.3, 1459.9 196.2 C 1461.7 206.6, 1469.3 216.9, 1481.3 225 C 1486.2 228.3, 1490.8 231, 1491.6 231 C 1492.3 231, 1495.6 232.4, 1498.9 234.2 C 1502.3 236, 1506.7 238.4, 1508.9 239.5 C 1514.4 242.3, 1532.8 257.7, 1534.4 260.9 C 1535.1 262.3, 1536.7 264.3, 1537.8 265.4 C 1539 266.4, 1540 267.9, 1540 268.6 C 1540 271.3, 1546 280.6, 1550.9 285.5 C 1556 290.4, 1556 290.5, 1562.7 290.5 C 1567.2 290.5, 1570.6 289.9, 1573 288.7 C 1574.9 287.7, 1578.4 286.4, 1580.8 285.9 C 1585.9 284.7, 1598.7 274.8, 1599.6 271.2 C 1601.2 264.9, 1598 264, 1578.2 264.7 L 1562.1 265.2 1559.3 261.9 C 1554.4 256.1, 1550.7 249.6, 1550.2 245.8 C 1549.1 237.4, 1564.5 229.7, 1581.2 230.4 C 1590.8 230.8, 1595 234.2, 1595 241.4 C 1595 244.4, 1599.6 254.8, 1602.3 257.7 C 1604.9 260.6, 1610.6 260.7, 1615.7 258 C 1617.7 256.9, 1619.9 256, 1620.5 256 C 1621.1 256, 1622.5 255, 1623.5 253.9 C 1624.6 252.7, 1626.8 251.2, 1628.4 250.5 C 1632 249, 1640 240.7, 1640 238.4 C 1640 237.5, 1638.4 234.9, 1636.5 232.7 C 1632.9 228.5, 1632 225.5, 1634.2 224.7 C 1635.7 224.1, 1640.1 226.2, 1641.9 228.4 C 1643.6 230.5, 1647.7 230.4, 1648.8 228.2 C 1650.1 225.8, 1646 210.1, 1643.1 206.4 C 1641.9 204.9, 1641 203.2, 1641 202.5 C 1641 201.9, 1638.7 196.9, 1636 191.5 C 1633.2 186, 1631 180.9, 1631 180.1 C 1631 179.3, 1630.1 176.7, 1629 174.5 C 1627.9 172.2, 1626.4 168.3, 1625.6 165.8 C 1622.7 156.3, 1608.4 139.3, 1596.2 131 C 1592.8 128.7, 1589.7 126.4, 1589.4 125.9 C 1589.1 125.3, 1587.4 124.3, 1585.6 123.5 C 1581.2 121.4, 1576.1 118.4, 1574.1 116.6 C 1573.2 115.8, 1570.8 114.7, 1568.7 114.1 C 1566.7 113.6, 1563.7 112.2, 1562.1 111 C 1560.5 109.9, 1558.7 109, 1558.2 109 C 1557.6 109, 1556.6 108.3, 1555.9 107.4 C 1555.3 106.6, 1552.3 105.2, 1549.3 104.4 C 1546.4 103.5, 1543.7 102.4, 1543.4 101.9 C 1542.6 100.6, 1531.3 95.5, 1527.4 94.6 C 1525.8 94.2, 1522.2 92.9, 1519.5 91.5 C 1516.7 90.2, 1512.9 88.6, 1511 87.9 C 1509 87.3, 1505 85.9, 1502 84.8 C 1499 83.8, 1495.8 82.2, 1494.9 81.4 C 1494 80.6, 1490.7 79.5, 1487.6 79 C 1484.6 78.5, 1481 77.4, 1479.8 76.6 C 1478.5 75.8, 1474.9 74.4, 1471.8 73.5 C 1468.6 72.7, 1465.8 71.5, 1465.5 71 C 1465.2 70.5, 1462.8 69.8, 1460.2 69.5 C 1457.6 69.1, 1453.5 67.9, 1451.1 66.7 C 1446.8 64.5, 1446.8 64.5, 1445.3 66.5 C 1441.1 72, 1447 91.4, 1456 101.7 C 1457.6 103.5, 1459 105.4, 1459 105.8 C 1459 106.2, 1461.2 109.5, 1463.9 113 C 1468.9 119.4, 1470.2 123, 1467.6 123 C 1466.9 123, 1465.4 122.1, 1464.5 121 C 1463.5 119.9, 1462.2 119, 1461.7 119 C 1459 119, 1446 104.4, 1446 101.4 C 1446 100.9, 1445.1 98.8, 1444.1 96.9 C 1443 95, 1441.5 90.6, 1440.6 87.2 C 1437.8 76.4, 1436.8 74.7, 1430.7 71.7 C 1427.7 70.2, 1423.8 69, 1422.1 69 C 1420.3 69, 1417.2 68.1, 1415.2 67.1 C 1411.5 65.2, 1401.4 62.2, 1389.5 59.3 C 1386.2 58.5, 1382.4 57.2, 1381.2 56.3 C 1379.9 55.5, 1375.4 54.2, 1371.2 53.4 C 1366.9 52.6, 1361 51.3, 1358 50.5 C 1355 49.6, 1351.5 49, 1350.4 49 C 1349.2 49, 1346.1 48, 1343.6 46.9 C 1341.1 45.8, 1335.3 44.4, 1330.8 43.9 C 1326.2 43.3, 1319.3 42.2, 1315.5 41.3 C 1311.6 40.5, 1305.1 39.4, 1301 38.9 C 1296.8 38.4, 1289.9 37.6, 1285.5 37 C 1281.1 36.4, 1273.6 35.5, 1269 34.9 C 1258.6 33.8, 1223 33.9, 1213.7 35.1 M 1225.9 50.8 C 1212.6 55.7, 1212 63.6, 1224.4 70.9 C 1230.4 74.4, 1230.6 74.5, 1241.9 74.4 C 1260.3 74.4, 1261.5 72.7, 1250.7 62.3 C 1238.1 50.1, 1233.5 48, 1225.9 50.8 M 1296.5 56.9 C 1296.1 57.5, 1297.9 59.2, 1300.3 60.7 C 1302.8 62.1, 1305.4 64.3, 1306 65.4 C 1306.7 66.5, 1310.3 70.1, 1314.1 73.3 C 1322.3 80.1, 1324.6 80.3, 1323.5 73.8 C 1321.8 62.7, 1314.3 56, 1303.8 56 C 1300.1 56, 1296.8 56.4, 1296.5 56.9 M 1144 71.9 C 1141.4 72.8, 1133.7 76.4, 1126.3 80.3 C 1113.7 86.9, 1113.3 96.8, 1125.6 97.7 C 1136.5 98.5, 1146.6 91.9, 1152.5 80 C 1156.3 72.4, 1152.7 69, 1144 71.9 M 1356.2 72.2 C 1355.2 73.4, 1355.5 74.4, 1357.9 77.4 C 1359.6 79.5, 1361 81.6, 1361 82 C 1361 84.2, 1371.4 89.3, 1375.9 89.3 C 1385 89.3, 1391.7 82.4, 1384.2 80.9 C 1382.3 80.5, 1380.1 79.5, 1379.2 78.7 C 1374.3 74.4, 1358.1 69.8, 1356.2 72.2 M 1185.2 80.7 C 1183.9 80.9, 1181.5 83.2, 1179.5 86.4 C 1174.6 93.8, 1174.3 104, 1179 110.9 C 1180.6 113.3, 1182 115.6, 1182 116.1 C 1182 117.6, 1190.5 122.8, 1195 124 C 1197.4 124.6, 1200.7 126, 1202.2 127.1 C 1207.7 131, 1208.4 129.8, 1208.7 116.2 C 1209 104.3, 1208.9 103.7, 1205.8 96.7 C 1201.7 87.3, 1197.6 82.2, 1193 81 C 1189.3 79.9, 1189 79.9, 1185.2 80.7 M 1462.4 86.6 C 1465.2 101.7, 1481.2 114.9, 1496.8 114.9 C 1498.6 115, 1495.9 110.5, 1492 107 C 1490.5 105.6, 1487.1 101.8, 1484.4 98.6 C 1479.7 93, 1466.1 83, 1463.1 83 C 1462.1 83, 1461.9 83.9, 1462.4 86.6 M 1083.7 109.6 C 1074.3 112.6, 1063 122.6, 1061 129.6 C 1056.7 145.1, 1064.3 151.3, 1079 144.2 C 1090.7 138.6, 1098 126.9, 1098 113.7 C 1098 106.3, 1095.9 105.7, 1083.7 109.6 M 1139 125.7 C 1136.1 126.2, 1122.9 139.4, 1118.5 146.1 C 1116.9 148.5, 1114.8 151.6, 1113.8 153 C 1110.6 157.2, 1106 167.3, 1106 170 C 1106 173.2, 1111.8 178, 1118.6 180.5 C 1131.4 185, 1140 175.1, 1143.4 152 C 1143.7 149.5, 1145 143.5, 1146.1 138.6 C 1149.1 126.1, 1148 124, 1139 125.7 M 1236.9 129.2 C 1232.2 136.6, 1236.3 148.3, 1247.2 158.8 C 1251.4 162.9, 1261.8 169, 1264.5 169 C 1265.2 169, 1267.2 170.1, 1268.9 171.6 C 1276.8 178.2, 1276.7 168.9, 1268.6 152.7 C 1257.5 130.4, 1242.9 119.6, 1236.9 129.2 M 1022 139.5 C 1020 140.2, 1017.6 140.8, 1016.7 140.9 C 1013.7 141, 1000.9 147.5, 993.5 152.8 C 980.6 161.8, 985.6 168.5, 1007.5 171.7 C 1014.6 172.7, 1025.2 164.5, 1030.9 153.6 C 1037.3 141.4, 1033.3 135.1, 1022 139.5 M 1572 151.8 C 1572 152.3, 1574.5 154.3, 1577.7 156.2 C 1581 158.3, 1586.6 163.4, 1591 168.4 C 1599.6 178.2, 1599.8 178.3, 1605.2 172.9 C 1609.1 169, 1609.3 166, 1605.6 166 C 1605 166, 1602.8 164.8, 1600.8 163.5 C 1598.7 162.1, 1595.3 159.9, 1593.2 158.6 C 1591.1 157.3, 1587.6 155.1, 1585.4 153.6 C 1581.4 151, 1572 149.7, 1572 151.8 M 1181.9 161.5 C 1179.3 164.7, 1178 175, 1179.5 180.9 C 1180.3 183.9, 1181 187.1, 1181 188 C 1181 190.5, 1195.8 205.3, 1200.4 207.4 C 1205.7 209.9, 1217.1 210.7, 1218.7 208.8 C 1221.8 205.1, 1220.2 187.9, 1216.1 181 C 1212.2 174.2, 1198.7 161.4, 1194.9 160.6 C 1189.3 159.5, 1183.3 159.9, 1181.9 161.5 M 908.4 163.8 C 900.3 169.9, 900.7 173.1, 910.7 181.4 C 917.3 186.9, 933.1 186.2, 939.7 180.1 C 951.6 169, 946.3 162.8, 923.6 161.4 L 912.5 160.8 908.4 163.8 M 750.5 176.1 C 748.3 176.6, 745.9 177.6, 745 178.4 C 744.1 179.2, 742.2 180.1, 740.7 180.5 C 737.9 181.2, 733 186.8, 733 189.2 C 733 190, 734 191.6, 735.4 192.9 C 741.4 198.6, 756.2 196.9, 763.7 189.7 C 768.5 185, 771.7 179.3, 770.2 177.8 C 767.7 175.3, 757.6 174.4, 750.5 176.1 M 817.9 175.9 C 815.3 176.2, 812.1 177.3, 810.7 178.2 C 809.4 179.1, 806.7 180.2, 804.8 180.7 C 795.6 183.1, 799 195.4, 810.2 200.1 C 817.1 202.9, 834.7 197.3, 843.2 189.4 C 853.5 179.8, 840.2 172.7, 817.9 175.9 M 1053.5 182.9 C 1051.8 184, 1049.2 185.2, 1047.6 185.5 C 1042.2 186.7, 1027 199, 1027 202.2 C 1027 204.2, 1030.8 209, 1032.4 209 C 1033.2 209, 1035.3 210.2, 1037.1 211.7 C 1042.2 216, 1063.7 215.9, 1072.2 211.5 C 1079.7 207.6, 1084.1 201.2, 1084.7 193.4 C 1085.2 188.3, 1085 187.9, 1081.3 184.5 L 1077.5 181 1067 181 C 1058.2 181, 1056 181.3, 1053.5 182.9 M 646 186.9 C 635.9 188.3, 619.2 198.4, 613.8 206.3 C 608.4 214.3, 609.2 214.9, 625.5 214 C 643.9 213, 656.7 204.7, 659.4 192.2 C 660.7 186.2, 658 185.2, 646 186.9 M 691.5 189.1 C 687.2 191.3, 681.1 197.6, 681 199.8 C 681 200.5, 680.2 202.7, 679.4 204.5 C 677.8 207.7, 677.9 208, 679.9 210.9 C 683 215.3, 694.1 215.5, 699.6 211.3 C 706.4 206, 711.3 190.7, 707 187.9 C 704.3 186.3, 695.7 186.9, 691.5 189.1 M 871.4 189.8 C 864.6 194.7, 855.9 204.4, 854.6 208.5 C 852.7 214.6, 861 225, 867.9 225 C 880.6 225, 883.9 223.9, 889.7 218.3 L 895.2 212.9 894.6 207.3 C 893.8 200.7, 892.5 197.9, 887 191.7 C 881.8 185.8, 877.6 185.3, 871.4 189.8 M 965 198.8 C 960.8 200.2, 956.3 202.2, 955 203.1 C 953.6 204.1, 951.3 205.1, 949.9 205.5 C 945.2 206.6, 934.6 217.3, 935.5 220.1 C 937.5 226.3, 941.9 229.9, 947.9 230.1 C 968.1 230.8, 980.4 229.8, 984.8 227.1 C 993.4 221.8, 994 221, 994.7 214.2 C 995.3 206.7, 994 204.2, 987.8 201 C 985.4 199.8, 982.3 198.1, 981 197.4 C 977.4 195.4, 973.5 195.7, 965 198.8 M 1400.4 200.5 C 1371.3 203.8, 1351.6 212.4, 1337.6 227.9 C 1335.9 229.8, 1333.3 232.5, 1331.9 233.9 C 1327.9 237.9, 1324.9 246.1, 1328.8 242.6 C 1329.8 241.7, 1331 240.9, 1331.5 240.9 C 1332 240.9, 1334.4 238.9, 1336.9 236.4 C 1339.3 234, 1341.6 232, 1342 232 C 1342.4 232, 1344.4 230.6, 1346.4 229 C 1350.3 225.9, 1364.4 220, 1368 220 C 1369.1 220, 1371.7 219.2, 1373.7 218.3 C 1375.8 217.3, 1380.8 215.8, 1385 214.9 C 1389.1 213.9, 1397.6 211.7, 1404 210 C 1410.3 208.2, 1419.2 206.2, 1423.8 205.4 C 1428.5 204.6, 1432.4 203.8, 1432.7 203.5 C 1435.9 200.4, 1417.2 198.6, 1400.4 200.5 M 1249.6 204.6 C 1243.3 207.9, 1238.3 229.2, 1242.3 235.4 C 1244.6 238.8, 1254.1 245, 1257.2 245 C 1258.7 245, 1261 245.4, 1262.5 246 C 1265.6 247.1, 1269 245.7, 1269 243.3 C 1269 242.4, 1269.9 240.2, 1271.1 238.3 C 1278.1 226.9, 1260.3 199, 1249.6 204.6 M 754.9 220.8 C 744.9 223.3, 739.5 234.2, 744.8 241 C 748.7 246, 774.8 243.2, 781.2 237.2 C 785.8 232.8, 784.3 223.8, 778.5 221.1 C 775.8 219.9, 759.5 219.7, 754.9 220.8 M 1184.5 235.1 C 1177.4 239.4, 1173.3 258.4, 1178.4 263.5 C 1181.2 266.3, 1181.6 266.3, 1189.1 265 C 1197 263.5, 1199 260.8, 1199 251.7 C 1199 239.7, 1191.3 230.9, 1184.5 235.1 M 817.2 235.4 C 813.4 237.1, 801 249.4, 801 251.6 C 801 254.2, 807.5 259.9, 814 262.8 C 826.3 268.3, 839.4 267.9, 847.1 261.7 C 861 250.5, 835 227.7, 817.2 235.4 M 1079.8 237.8 C 1067.3 243.7, 1055.7 259.3, 1060 264.6 C 1063.6 268.8, 1075.4 270.5, 1081.1 267.6 C 1082.6 266.8, 1085.3 265.7, 1087.1 265.1 C 1092.9 263.1, 1101.1 254, 1101.6 248.8 C 1102.8 236.7, 1092.8 231.7, 1079.8 237.8 M 575.5 244.8 C 555.5 254.9, 541.3 283, 556 283 C 572.9 283, 589 267.5, 589 251.2 C 589 241.1, 585.7 239.5, 575.5 244.8 M 640.4 245.4 C 630.6 248.4, 617.8 260, 613.4 269.8 L 610.6 276.2 612.6 279.8 C 617.7 288.5, 633.4 293.5, 638.8 288.1 C 639.9 287, 641.8 285.6, 643 284.9 C 647.7 282.4, 653.3 276.3, 655.7 271 C 661.5 258.1, 663.3 248.3, 660.4 245.9 C 658.3 244.2, 645.5 243.8, 640.4 245.4 M 902.7 249 C 900.7 249.5, 895.8 251.5, 892 253.4 L 885 257 885 262.2 C 885 267.1, 885.2 267.6, 890.2 272.4 C 893.1 275.2, 896.3 278.7, 897.2 280.2 C 898.2 281.7, 899.9 283, 901 283 C 902 283, 903.4 283.7, 904 284.7 C 906 287.9, 921.6 286.9, 928.2 283.1 C 945.7 272.9, 946.2 264.4, 930 253 C 925.4 249.7, 909.2 247.4, 902.7 249 M 694.7 250.1 C 689.9 251.4, 685.5 256.5, 683.3 263.4 C 681.7 268.6, 681.7 269.1, 683.6 276.1 C 686 285, 687.8 286.4, 691.7 282.7 C 693.3 281.2, 695 279.9, 695.5 279.9 C 696 279.9, 698.3 278.2, 700.6 276 C 704.4 272.3, 704.7 271.6, 705.4 264.8 C 707 249.2, 705.6 247.3, 694.7 250.1 M 1012 252.4 C 1010.6 253.1, 1006.4 254.2, 1002.6 254.9 C 995.5 256.1, 987.3 259.6, 985.1 262.3 C 984.4 263.2, 981.8 265, 979.4 266.4 C 972.6 270.4, 972.6 273.3, 979.1 280.9 C 985.5 288.3, 996.8 288.6, 1015.4 282 C 1018.7 280.9, 1022.3 279.1, 1023.4 278.1 C 1024.5 277.1, 1026.7 275.6, 1028.2 274.6 C 1031.9 272.3, 1032.6 267.8, 1030.3 261 L 1028.5 255.7 1021.5 253.3 C 1017.6 252, 1014.5 251, 1014.5 251 C 1014.5 251, 1013.3 251.6, 1012 252.4 M 450.7 286.9 C 449.4 287.9, 446.5 289.3, 444.3 289.9 C 442 290.5, 439.6 291.6, 438.9 292.5 C 438.3 293.3, 436.9 294, 435.9 294 C 434.9 294, 432.8 295.1, 431.1 296.5 C 429.5 297.8, 427 299, 425.5 299 C 424 299, 422 300, 420.8 301.5 C 419.6 302.8, 418.1 304, 417.5 304 C 416.8 304, 414.8 305.1, 413 306.5 C 411.1 307.8, 408.3 309, 406.8 309 C 405.3 309, 402.8 310, 401.3 311.3 C 399.7 312.6, 397.1 314, 395.5 314.4 C 393.9 314.8, 391.5 315.9, 390.1 317 C 388.8 318.1, 386.7 319, 385.4 319 C 384.1 319, 381.8 320, 380.3 321.3 C 378.7 322.6, 375.9 324, 374 324.4 C 372 324.8, 369.6 326, 368.5 327 C 367.4 327.9, 364.6 329, 362.3 329.4 C 359.8 329.8, 357.4 331, 356.1 332.5 C 354.5 334.3, 352.9 335, 350.1 335 C 347.6 335, 345.7 335.6, 344.5 336.8 C 343.6 337.9, 340.8 339, 338.4 339.4 C 336 339.8, 332.7 341.2, 331.1 342.5 C 328.9 344.3, 327 345, 323.5 345 C 318.2 345, 315 346.3, 315 348.5 C 315 351.2, 324.3 350.4, 327.8 347.5 C 330.1 345.5, 331.8 345, 336.2 345 C 340 345, 342.4 344.4, 344.1 343.1 C 345.4 342.1, 348 340.9, 350 340.5 C 351.9 340.1, 354.2 339, 355.2 338.2 C 356.2 337.3, 359.2 336.3, 362 335.8 C 365.5 335.3, 367.9 334.2, 369.5 332.5 C 371.1 330.8, 372.9 330, 375 330 C 376.7 330, 379.3 329.1, 380.7 328 C 382.1 326.9, 384.3 326, 385.5 326 C 386.8 326, 389.1 324.9, 390.6 323.6 C 392.2 322.3, 395.1 320.9, 397.1 320.6 C 399.1 320.2, 401.7 319, 402.9 318 C 404.1 316.9, 406.4 315.8, 407.9 315.5 C 409.5 315.1, 411.5 314, 412.5 312.9 C 413.5 311.8, 415.5 311, 417 311 C 418.6 311, 421.1 309.8, 422.8 308.5 C 424.4 307.1, 426.4 306, 427.3 306 C 428.1 306, 430.1 304.8, 431.8 303.5 C 433.4 302.1, 435.6 301, 436.6 301 C 437.7 301, 439.7 299.6, 441.1 298 C 442.6 296.3, 444.7 295, 445.8 295 C 446.9 295, 448.5 294, 449.3 292.8 C 450.1 291.7, 451.8 290.2, 453.1 289.6 C 454.3 289, 455.5 287.9, 455.7 287.3 C 456.3 285.3, 453.1 285, 450.7 286.9 M 913.6 293.1 C 912.4 294.1, 912 294.9, 912.7 294.9 C 913.4 294.9, 914 295.6, 914 296.5 C 914 298.4, 913 298.3, 910.8 296.3 C 908.2 293.9, 906.4 295.8, 907.6 299.5 C 909.5 305.2, 917.1 305.4, 917.8 299.8 C 918.2 296.2, 922.5 293.3, 924.6 295.1 C 925.7 296, 925.9 297.3, 925.5 299.6 C 924.8 303.4, 927.6 304.3, 931.3 301.5 C 932.4 300.7, 933.6 300.3, 934.1 300.5 C 935.5 301.4, 935.1 305, 933.5 305 C 931.7 305, 930.6 306.6, 931.5 308 C 932.3 309.3, 937.8 304.5, 939 301.4 C 939.6 299.7, 940.4 299.4, 943.4 299.7 C 947.2 300.2, 947.6 300.9, 945.8 304.1 C 944.6 306.5, 946 307.9, 949.6 307.9 C 952.7 308, 953.5 306.1, 951.3 304 C 950.3 303, 948.2 300.8, 946.7 299.1 C 943.5 295.4, 942.5 295.3, 940.3 297.8 C 938.5 299.9, 935 299.6, 935 297.3 C 935 296.5, 934.5 296.1, 934 296.4 C 933.5 296.7, 932.1 295.7, 930.7 294.1 C 927.7 290.6, 917.4 289.9, 913.6 293.1 M 1172.8 304.2 C 1170.2 306.4, 1166 314.7, 1166 317.7 C 1166 324.2, 1170 329.7, 1177.8 333.9 C 1183.7 337, 1212 334.9, 1212 331.2 C 1212 320.4, 1180 298.3, 1172.8 304.2 M 530 310.6 C 526.1 311.4, 521.7 316.2, 518.1 323.7 C 516.3 327.4, 513.7 332.6, 512.3 335.3 C 508.5 342.6, 509.2 351.1, 514 355.1 C 525.5 364.7, 547.3 349, 549.6 329.5 C 551.2 315.9, 543 308, 530 310.6 M 749 311.4 C 735.1 314.6, 724.9 317.8, 720 320.5 C 718.6 321.3, 715.7 322.8, 713.5 323.9 C 707.8 326.7, 701.5 332.4, 702.3 333.8 C 703.4 335.5, 706.3 335.2, 709.1 333.1 C 713 330.1, 731.2 324.9, 743.2 323.4 C 749.4 322.6, 756.4 321.4, 758.7 320.8 C 765.9 318.9, 809.4 320.6, 814.2 323.1 C 819.1 325.6, 830.7 325.7, 831.6 323.3 C 832.4 321.3, 830.5 320.1, 825 319.4 C 822.5 319.1, 814.8 317.2, 808 315.3 C 801.1 313.3, 793.2 311.3, 790.5 310.9 C 782.5 309.6, 755.1 310, 749 311.4 M 654.5 316.9 C 651.2 318.5, 647.9 319.9, 647.3 319.9 C 645.1 320, 635.4 328.9, 633.2 332.8 C 629.4 339.4, 631.9 348.9, 637.6 349.8 C 640.2 350.1, 651 341.4, 654.6 336.1 C 668.6 315.3, 668.6 309.8, 654.5 316.9 M 589.3 321.6 C 588.1 321.9, 586.6 322.7, 585.9 323.5 C 585.2 324.3, 584.1 325, 583.3 325 C 580.7 325, 570.4 335.7, 567.6 341.3 C 564.4 347.5, 563.7 356.1, 566 358.5 C 568 360.5, 580.8 362.1, 585 360.9 C 586.8 360.4, 589.5 358.9, 590.9 357.6 C 592.3 356.3, 594.5 354.6, 595.7 353.8 C 598.6 351.9, 602.5 346, 605.5 339.2 L 607.9 333.8 605 328 C 601.4 320.9, 598.7 319.8, 589.3 321.6 M 1244.7 323.4 C 1240.3 327.3, 1242.3 331.3, 1251.2 336.4 C 1258.7 340.7, 1274 339.1, 1274 334 C 1274 332.3, 1265.6 325, 1263.7 325 C 1263.2 325, 1261.6 324.1, 1260.2 323 C 1256.4 320, 1248.3 320.2, 1244.7 323.4 M 1323.1 348.7 C 1315.7 352.5, 1315.4 353.1, 1318.5 356.8 C 1319.9 358.5, 1321.6 360, 1322.1 360 C 1322.6 360, 1324.3 360.9, 1325.8 362 C 1330.5 365.5, 1352.3 363.1, 1356.8 358.5 C 1358 357.3, 1357.7 356.9, 1354.9 355.4 C 1353.1 354.5, 1349.3 352.1, 1346.5 350.1 C 1339.8 345.4, 1330.5 344.8, 1323.1 348.7 M 581.4 392.9 C 576.2 394.8, 565.6 400.3, 562.8 402.7 C 560.3 404.8, 556.4 417.8, 557.6 419.8 C 559.4 422.6, 561.6 422.2, 570.4 417.5 C 583.9 410.4, 598.2 396.7, 596.6 392.4 C 595.8 390.4, 587.7 390.7, 581.4 392.9 M 498.5 397.1 C 491 399.6, 485 405.1, 485 409.2 C 485 412.5, 490.9 420.3, 495.3 422.6 C 500.2 425.2, 515.9 421.9, 524.5 416.4 C 529.8 413, 530 412.7, 530 408.4 C 530 404.1, 529.7 403.8, 523.8 399.5 C 516.4 394.1, 509.2 393.4, 498.5 397.1 M 429.5 408.6 C 425.2 410.9, 418 418.5, 418 420.7 C 418 424, 420.1 425, 427.5 425 C 435.5 425, 441.4 421.6, 444 415.8 C 447 408.8, 437.7 404.2, 429.5 408.6 M 366.5 430.4 C 347 437, 343.9 442.2, 356.8 446.4 L 363 448.3 373.2 445.8 C 378.8 444.4, 383.8 442.6, 384.3 441.7 C 388.2 435.6, 375.3 427.4, 366.5 430.4 M 462.3 436.2 C 453.6 441.2, 452.2 443, 453.5 447 C 453.8 448.1, 455.3 449.6, 456.8 450.4 C 458.4 451.2, 460.2 452.5, 460.9 453.4 C 462.9 455.8, 477.9 455.6, 481.1 453.1 L 483.4 451.2 481.4 446.4 C 478.4 439, 467.4 433.2, 462.3 436.2"/>
+    <linearGradient id="goldFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8c611f"/>
+      <stop offset=".32" stop-color="#d6a651"/>
+      <stop offset=".52" stop-color="#f6e0a4"/>
+      <stop offset=".72" stop-color="#c9953a"/>
+      <stop offset="1" stop-color="#7c541a"/>
+    </linearGradient>
+    <linearGradient id="shineGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff6dc" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#fff6dc" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#fff6dc" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="jagClip"><use href="#jag"/></clipPath>
+  </defs>
+</svg>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><span id="progress"></span></div>
+
+<!-- ============ INTRO ============ -->
+<div class="intro" id="intro">
+  <div class="intro__half intro__half--top" aria-hidden="true"></div>
+  <div class="intro__half intro__half--bottom" aria-hidden="true"></div>
+  <div class="intro__stage" aria-hidden="true">
+    <div class="intro__glow"></div>
+    <div class="intro__mark" id="introMark">
+      <svg viewBox="0 0 1680 615" id="introSvg">
+        <use href="#jag" class="intro__fill" fill="url(#goldFill)" opacity="0"/>
+        <g clip-path="url(#jagClip)"><rect class="intro__shine" x="-520" y="0" width="420" height="615" fill="url(#shineGrad)" transform="skewX(-18)"/></g>
+        <g class="intro__strokes"></g>
+      </svg>
+    </div>
+    <div class="intro__line"></div>
+    <p class="intro__word" id="introWord">JAGUAR DETAILING</p>
+    <p class="intro__tag"><i></i>PRO DETAILING<i></i></p>
+  </div>
+  <p class="intro__place" aria-hidden="true">ALAJUELA · COSTA RICA</p>
+  <button class="intro__skip" id="introSkip" type="button">Saltar intro</button>
+</div>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="nav__in">
+    <a class="nav__brand" href="#inicio" aria-label="Jaguar Detailing, volver al inicio">
+      <svg class="nav__jag" id="navJag" viewBox="0 0 1680 615" aria-hidden="true"><use href="#jag" fill="url(#goldFill)"/></svg>
+      <span class="nav__word"><b>JAGUAR</b><small>DETAILING</small></span>
+    </a>
+    <nav class="nav__links" aria-label="Principal">
+      <a href="#servicios">Servicios</a>
+      <a href="#resultados">Resultados</a>
+      <a href="#proceso">Proceso</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <a class="btn btn--gold nav__cta magnetic" data-wa href="https://wa.me/50672384351" target="_blank" rel="noopener">Agendar cita</a>
+    <button class="nav__toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="menu">Menú</button>
+  </div>
+</header>
+<div class="menu" id="menu" hidden>
+  <a href="#servicios">Servicios</a>
+  <a href="#resultados"><em>Resultados</em></a>
+  <a href="#proceso">Proceso</a>
+  <a href="#contacto">Contacto</a>
+</div>
+
+<main>
+<!-- ============ HERO ============ -->
+<section class="hero" id="inicio" aria-label="Jaguar Detailing">
+  <canvas class="hero__gl" id="heroGL" aria-hidden="true"></canvas>
+  <div class="hero__shade" aria-hidden="true"></div>
+  <div class="hero__inner" id="heroInner">
+    <p class="eyebrow hero__eyebrow hero__fade" style="--i:0">Pro Detailing · Alajuela</p>
+    <h1 class="hero__title">
+      <span class="line"><span style="--i:0">Cuidamos</span></span>
+      <span class="line l2"><span class="gold-text" style="--i:1">cada detalle.</span></span>
+    </h1>
+    <div class="hero__foot">
+      <p class="lead hero__fade" style="--i:1">Detailing automotriz profesional para vehículos que merecen un trato de alta gama. Lavado premium, pulido y corrección de rayones en carrocería, focos y vidrios.</p>
+      <div class="hero__actions hero__fade" style="--i:2">
+        <a class="btn btn--gold magnetic" data-wa href="https://wa.me/50672384351" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 20l1.3-3.8A8 8 0 1 1 8 19z"/></svg>
+          Agenda por WhatsApp
+        </a>
+        <a class="btn btn--ghost magnetic" href="#servicios">Ver servicios</a>
+      </div>
+    </div>
+    <div class="hero__bar hero__fade" style="--i:3">
+      <p class="hero__scroll"><i aria-hidden="true"></i>Desliza para descubrir</p>
+      <ul class="hero__tags" aria-label="Servicios principales">
+        <li>Lavado premium</li><li>Pulido profesional</li><li>Cerámico en parabrisas</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MANIFESTO ============ -->
+<section class="manifesto" id="filosofia" aria-label="Nuestra filosofía">
+  <div class="manifesto__sticky">
+    <p class="eyebrow">Nuestra filosofía</p>
+    <p class="manifesto__text" id="manifesto">Un vehículo de alta gama merece el mismo cuidado con el que fue construido. Trabajamos panel por panel, bajo <em>luz de inspección,</em> hasta que la pintura vuelve a reflejar como <em>el primer día.</em></p>
+    <div class="manifesto__sign">
+      <svg viewBox="0 0 1680 615" aria-hidden="true"><use href="#jag" fill="url(#goldFill)"/></svg>
+      <span>Jaguar Detailing · Pro Detailing</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section class="services" id="servicios" aria-label="Servicios">
+  <div class="services__sticky" id="svcSticky">
+    <div class="wrap services__head">
+      <div>
+        <p class="eyebrow reveal">Servicios</p>
+        <h2 class="h2 reveal-mask" style="margin-top:22px">Tratamientos para <em class="gold-text">cada superficie.</em></h2>
+      </div>
+      <div class="services__meter reveal" style="--d:150ms" aria-hidden="true">
+        <span><b id="svcNow">01</b> / <span id="svcTotal">05</span></span>
+        <i><span id="svcBar"></span></i>
+      </div>
+    </div>
+    <div class="services__track" id="svcTrack">
+
+      <article class="svc">
+        <div class="svc__art" aria-hidden="true">
+          <svg viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
+            <path class="art-stroke" d="M200 52c26 38 48 66 48 96a48 48 0 0 1-96 0c0-30 22-58 48-96z"/>
+            <path class="art-stroke art-dim" d="M60 205c40-14 80-14 120 0s80 14 120 0 60-10 60-10"/>
+            <path class="art-stroke art-dim" d="M40 222c40-14 80-14 120 0s80 14 120 0 80-12 80-12"/>
+            <circle class="bubble" cx="120" cy="210" r="7" style="animation-delay:-1s"/>
+            <circle class="bubble" cx="150" cy="215" r="4" style="animation-delay:-2.6s"/>
+            <circle class="bubble" cx="268" cy="212" r="9" style="animation-delay:-.4s"/>
+            <circle class="bubble" cx="300" cy="218" r="5" style="animation-delay:-3.4s"/>
+            <circle class="bubble" cx="90" cy="220" r="3" style="animation-delay:-4.2s"/>
+            <path class="art-stroke" d="M186 142c0 10 6 18 14 20" style="stroke:var(--gold-hi)"/>
+          </svg>
+        </div>
+        <div class="svc__body">
+          <p class="svc__kicker">Exterior</p>
+          <h3>Lavado Premium</h3>
+          <p>Lavado a mano con productos de pH neutro, secado con microfibra y limpieza de rines y llantas. El punto de partida de todo buen acabado.</p>
+          <ul class="svc__list"><li>Carrocería, rines y llantas</li><li>Secado sin marcas</li><li>Acabado con brillo</li></ul>
+        </div>
+      </article>
+
+      <article class="svc">
+        <div class="svc__art" aria-hidden="true">
+          <svg viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
+            <circle class="art-stroke art-dim" cx="200" cy="125" r="92"/>
+            <circle class="art-stroke art-dim" cx="200" cy="125" r="70"/>
+            <g class="spin"><circle class="art-stroke" cx="200" cy="125" r="80" stroke-dasharray="3 9"/></g>
+            <g class="orbit"><g class="spin spin--rev"><circle class="art-stroke" cx="206" cy="125" r="46"/><circle class="art-stroke" cx="206" cy="125" r="30" stroke-dasharray="40 14"/></g></g>
+            <circle cx="200" cy="125" r="3" fill="var(--gold-hi)"/>
+          </svg>
+        </div>
+        <div class="svc__body">
+          <p class="svc__kicker">Pintura</p>
+          <h3>Pulido Profesional</h3>
+          <p>Devolvemos profundidad y brillo a la pintura. Retiramos opacidad, hologramas y oxidación leve hasta lograr un reflejo limpio.</p>
+          <ul class="svc__list"><li>Brillo tipo espejo</li><li>Menos opacidad y hologramas</li><li>Color más profundo</li></ul>
+        </div>
+      </article>
+
+      <article class="svc">
+        <div class="svc__art" aria-hidden="true">
+          <svg viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
+            <rect class="art-stroke art-dim" x="40" y="50" width="320" height="150"/>
+            <mask id="healMask" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="250"><rect class="sweep" x="0" y="0" width="600" height="250" fill="#fff"/></mask>
+            <g mask="url(#healMask)">
+              <path class="scratch" d="M70 90l40 12"/>
+              <path class="scratch" d="M100 150l30-24"/>
+              <path class="scratch" d="M150 80l46 8"/>
+              <path class="scratch" d="M170 170c20-10 36-12 52-10"/>
+              <path class="scratch" d="M230 110l40 20"/>
+              <path class="scratch" d="M260 170l44-18"/>
+              <path class="scratch" d="M300 80l30 14"/>
+            </g>
+            <g class="sweep"><rect x="0" y="40" width="3" height="170" fill="var(--gold-hi)"/><rect x="-40" y="40" width="40" height="170" fill="url(#shineGrad)" opacity=".25"/></g>
+          </svg>
+        </div>
+        <div class="svc__body">
+          <p class="svc__kicker">Superficies</p>
+          <h3>Corrección de rayones</h3>
+          <p>Tratamos micro-rayones y marcas de uso en la pintura, restauramos la claridad de los focos opacos y corregimos el vidrio.</p>
+          <ul class="svc__list"><li>Micro-rayones en pintura</li><li>Focos opacos o amarillentos</li><li>Vidrios con marcas</li></ul>
+        </div>
+      </article>
+
+      <article class="svc">
+        <div class="svc__art" aria-hidden="true">
+          <svg viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
+            <path class="art-stroke" d="M80 200L112 58Q116 46 130 46h140q14 0 18 12L320 200z"/>
+            <path class="art-stroke art-dim" d="M112 200a120 120 0 0 1 96-110"/>
+            <circle class="bead" cx="160" cy="84" r="6" style="animation-delay:-.2s"/>
+            <circle class="bead" cx="214" cy="72" r="4.5" style="animation-delay:-1.4s"/>
+            <circle class="bead" cx="250" cy="100" r="7" style="animation-delay:-2.2s"/>
+            <circle class="bead" cx="186" cy="118" r="3.5" style="animation-delay:-3s"/>
+            <circle class="bead" cx="274" cy="80" r="3" style="animation-delay:-.9s"/>
+            <circle class="bead" cx="140" cy="130" r="5" style="animation-delay:-2.7s"/>
+          </svg>
+        </div>
+        <div class="svc__body">
+          <p class="svc__kicker">Parabrisas</p>
+          <h3>Pulido + Cerámico</h3>
+          <p>Pulimos el vidrio para eliminar micro-rayones y marcas de escobillas. Luego aplicamos una capa cerámica hidrofóbica que hace que el agua se deslice.</p>
+          <ul class="svc__list"><li>Más visibilidad bajo lluvia</li><li>Menos reflejos de noche</li><li>Limpieza más sencilla</li></ul>
+        </div>
+      </article>
+
+      <article class="svc svc--end">
+        <p class="svc__kicker">Asesoría</p>
+        <h3>¿No sabes qué necesita <em>tu vehículo?</em></h3>
+        <p style="color:var(--smoke)">Mándanos fotos por WhatsApp. Revisamos el estado de la pintura y te recomendamos el tratamiento adecuado.</p>
+        <a class="btn btn--gold" data-wa href="https://wa.me/50672384351" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section class="results" id="resultados">
+  <div class="wrap results__head">
+    <p class="eyebrow reveal">Resultados visibles</p>
+    <h2 class="h2 reveal-mask">La diferencia se ve <em class="gold-text">bajo la luz.</em></h2>
+    <p class="lead reveal" style="--d:120ms">Bajo una lámpara de inspección, los micro-rayones forman círculos alrededor del reflejo. Después de la corrección, la luz vuelve a ser un punto limpio. Arrastra la línea para comparar.</p>
+  </div>
+  <div class="compare-wrap reveal">
+    <div class="compare" id="compare">
+      <canvas id="compareCanvas" role="img" aria-label="Simulación de pintura negra bajo luz de inspección: a la izquierda con micro-rayones circulares, a la derecha pulida con reflejo limpio"></canvas>
+      <span class="compare__tag compare__tag--before">Antes</span>
+      <span class="compare__tag compare__tag--after">Después</span>
+      <div class="compare__handle" aria-hidden="true"></div>
+      <div class="compare__knob" id="compareKnob" role="slider" tabindex="0" aria-label="Comparar antes y después" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+        <svg viewBox="0 0 26 12" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M6 1L1 6l5 5M20 1l5 5-5 5"/></svg>
+      </div>
+    </div>
+  </div>
+  <p class="compare__note"><span>Simulación ilustrativa de la corrección de pintura.</span><span class="compare__hint">Mueve el cursor para mover la luz.</span></p>
+</section>
+
+<!-- ============ GLASS ============ -->
+<section class="glass" id="parabrisas">
+  <div class="wrap glass__grid">
+    <div class="glass__copy">
+      <p class="eyebrow reveal">Servicio destacado</p>
+      <h2 class="h2 reveal-mask">Pulido + cerámico <em class="gold-text">en parabrisas.</em></h2>
+      <p class="lead reveal" style="--d:100ms"><strong>Más visibilidad, más seguridad, mejor manejo.</strong> Eliminamos las marcas que distorsionan la luz de noche y sellamos el vidrio para que la lluvia no se quede.</p>
+      <div class="benefits reveal" style="--d:180ms">
+        <div>
+          <h3>Beneficios del pulido</h3>
+          <ul>
+            <li><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7.5l3 3 7-8"/></svg>Elimina micro-rayones y marcas de escobillas</li>
+            <li><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7.5l3 3 7-8"/></svg>Mejora la claridad y la visibilidad</li>
+            <li><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7.5l3 3 7-8"/></svg>Reduce distorsiones al manejar de noche</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Beneficios del cerámico</h3>
+          <ul>
+            <li><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7.5l3 3 7-8"/></svg>Efecto hidrofóbico: el agua se desliza</li>
+            <li><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7.5l3 3 7-8"/></svg>Mayor visibilidad en lluvia intensa</li>
+            <li><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7.5l3 3 7-8"/></svg>Menos adherencia de suciedad e insectos</li>
+            <li><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 7.5l3 3 7-8"/></svg>Limpieza y mantenimiento más fáciles</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="glass__visual reveal" style="--d:120ms">
+      <div class="glass__frame">
+        <canvas id="glassCanvas" role="img" aria-label="Simulación de parabrisas bajo lluvia: a la izquierda sin tratamiento, con una película de agua que distorsiona las luces; a la derecha con cerámico, el agua forma gotas que se deslizan"></canvas>
+        <div class="glass__labels" aria-hidden="true"><span>Sin cerámico</span><span>Con cerámico</span></div>
+      </div>
+      <div class="result-card">
+        <svg viewBox="0 0 40 44" aria-hidden="true"><path d="M20 2l16 6v12c0 11-7 18-16 22C11 38 4 31 4 20V8z"/><path d="M13 22l5 5 10-11"/></svg>
+        <p><b>RESULTADO</b>Conducción más segura, visión más nítida y un acabado premium.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section class="process" id="proceso">
+  <div class="wrap process__grid">
+    <div class="process__aside">
+      <p class="eyebrow reveal">Proceso</p>
+      <h2 class="h2 reveal-mask">Cinco pasos, <em class="gold-text">sin prisa.</em></h2>
+      <p class="lead reveal" style="--d:100ms">Cada vehículo pasa por el mismo método. Así el resultado no depende de la suerte.</p>
+      <div class="process__count reveal" style="--d:180ms" aria-hidden="true"><span class="num"><span class="gold-text" id="stepNum">01</span></span><small>/ 05</small></div>
+    </div>
+    <div class="steps" id="steps">
+    <div class="steps__rail" aria-hidden="true"><span id="stepRail"></span></div>
+    <ol>
+      <li class="step is-active"><span class="step__n">01</span><div><h3>Diagnóstico</h3><p>Revisamos la pintura, los focos y los vidrios bajo luz dedicada. Te explicamos qué vemos y qué tratamiento recomendamos.</p></div></li>
+      <li class="step"><span class="step__n">02</span><div><h3>Lavado y descontaminación</h3><p>Lavado a mano y retiro de la suciedad adherida que el lavado normal no quita, para trabajar sobre una superficie limpia.</p></div></li>
+      <li class="step"><span class="step__n">03</span><div><h3>Corrección y pulido</h3><p>Trabajamos por secciones, panel por panel, hasta retirar hologramas y micro-rayones y recuperar la profundidad del color.</p></div></li>
+      <li class="step"><span class="step__n">04</span><div><h3>Protección</h3><p>Sellamos el acabado para que el brillo dure más y el mantenimiento sea sencillo. En el parabrisas, aplicamos la capa cerámica.</p></div></li>
+      <li class="step"><span class="step__n">05</span><div><h3>Entrega</h3><p>Revisamos el vehículo contigo, bajo luz, antes de entregarte las llaves. Te damos recomendaciones para mantener el resultado.</p></div></li>
+    </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BRANDS ============ -->
+<section class="brands" aria-label="Vehículos que atendemos">
+  <p class="eyebrow">Vehículos que exigen precisión</p>
+  <div class="marquee" id="marqueeA" aria-hidden="true">
+    <div class="marquee__set">
+      <span class="marquee__item">BMW</span><span class="marquee__dot"></span>
+      <span class="marquee__item o">Mercedes-Benz</span><span class="marquee__dot"></span>
+      <span class="marquee__item s">Mustang</span><span class="marquee__dot"></span>
+      <span class="marquee__item o">Jeep</span><span class="marquee__dot"></span>
+    </div>
+  </div>
+  <div class="marquee marquee--rev" id="marqueeB" aria-hidden="true">
+    <div class="marquee__set">
+      <span class="marquee__item">Lavado premium</span><span class="marquee__dot"></span>
+      <span class="marquee__item">Pulido profesional</span><span class="marquee__dot"></span>
+      <span class="marquee__item">Corrección de rayones</span><span class="marquee__dot"></span>
+      <span class="marquee__item">Cerámico en parabrisas</span><span class="marquee__dot"></span>
+      <span class="marquee__item">Restauración de focos</span><span class="marquee__dot"></span>
+    </div>
+  </div>
+  <p class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Atendemos BMW, Mercedes-Benz, Mustang, Jeep y otros vehículos de alta gama.</p>
+</section>
+
+<!-- ============ CTA / CONTACT ============ -->
+<section class="cta" id="contacto">
+  <svg class="cta__jag" id="ctaJag" viewBox="0 0 1680 615" aria-hidden="true"><use href="#jag" fill="url(#goldFill)"/></svg>
+  <div class="wrap cta__grid">
+    <div class="cta__copy">
+      <p class="eyebrow reveal">Agenda tu cita</p>
+      <h2 class="h2 reveal-mask">Lleva tu vehículo <em class="gold-text">al siguiente nivel.</em></h2>
+      <p class="lead reveal" style="--d:100ms">Escríbenos por WhatsApp con el modelo de tu vehículo y el servicio que te interesa. Te respondemos con disponibilidad y una recomendación.</p>
+      <dl class="contact reveal" style="--d:180ms">
+        <div class="contact__row"><dt>WhatsApp</dt><dd><span class="tel" id="tel">7238-4351</span><button class="copy" id="copyTel" type="button">Copiar</button></dd></div>
+        <div class="contact__row"><dt>Ubicación</dt><dd>Alajuela, Costa Rica</dd></div>
+        <div class="contact__row"><dt>Instagram</dt><dd><a href="https://www.instagram.com/_jaguardetailing/" target="_blank" rel="noopener">@_jaguardetailing</a></dd></div>
+      </dl>
+    </div>
+    <div class="booking reveal" style="--d:120ms" role="group" aria-labelledby="bookingTitle">
+      <h3 id="bookingTitle">Arma tu mensaje</h3>
+      <fieldset>
+        <legend>Servicio</legend>
+        <div class="chips" id="chips">
+          <label class="chip"><input type="checkbox" id="svc-lavado" value="lavado premium" checked><span>Lavado premium</span></label>
+          <label class="chip"><input type="checkbox" id="svc-pulido" value="pulido profesional"><span>Pulido</span></label>
+          <label class="chip"><input type="checkbox" id="svc-rayones" value="corrección de rayones"><span>Corrección de rayones</span></label>
+          <label class="chip"><input type="checkbox" id="svc-focos" value="restauración de focos"><span>Focos</span></label>
+          <label class="chip"><input type="checkbox" id="svc-parabrisas" value="pulido + cerámico en parabrisas"><span>Cerámico en parabrisas</span></label>
+        </div>
+      </fieldset>
+      <div class="field"><label for="vehiculo">Tu vehículo</label><input id="vehiculo" type="text" placeholder="Ej. BMW X5 2021" autocomplete="off"></div>
+      <div class="field"><label for="nombre">Tu nombre</label><input id="nombre" type="text" placeholder="Ej. Andrés" autocomplete="given-name"></div>
+      <p class="booking__preview" id="preview" aria-live="polite"></p>
+      <a class="btn btn--gold magnetic" id="bookingLink" href="https://wa.me/50672384351" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 20l1.3-3.8A8 8 0 1 1 8 19z"/></svg>
+        Continuar en WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__top">
+    <p class="foot__tag">Cuidamos cada detalle. <span class="gold-text">Potenciamos cada experiencia.</span></p>
+    <nav class="foot__links" aria-label="Pie de página">
+      <a href="#servicios">Servicios</a><a href="#resultados">Resultados</a><a href="#proceso">Proceso</a>
+      <a href="https://www.instagram.com/_jaguardetailing/" target="_blank" rel="noopener">Instagram</a>
+    </nav>
+  </div>
+  <p class="foot__word gold-text" aria-hidden="true">JAGUAR</p>
+  <div class="foot__legal wrap">
+    <span>© 2026 Jaguar Detailing · Pro Detailing</span>
+    <span>Alajuela, Costa Rica · WhatsApp 7238-4351</span>
+  </div>
+</footer>
+
+<a class="fab" id="fab" data-wa href="https://wa.me/50672384351" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-3.8A8 8 0 1 1 8 19z"/><path d="M9 10.5h6M9 13.5h4"/></svg>
+  <span>WhatsApp</span>
+</a>
+
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const easeOut = t => 1 - Math.pow(1 - t, 3);
+const root = document.documentElement;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fine = matchMedia('(pointer: fine)').matches;
+const WA = '50672384351';
+const waHref = msg => `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
+const NS = 'http://www.w3.org/2000/svg';
+
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+/* Default WhatsApp message on every generic CTA */
+$$('[data-wa]').forEach(a => a.href = waHref('Hola Jaguar Detailing, me gustaría agendar una cita.'));
+
+/* ---------- Smooth scroll ---------- */
+let lenis = null;
+if (!reduce && typeof window.Lenis === 'function') {
+  try { lenis = new window.Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 0.95, touchMultiplier: 1.3 }); } catch (e) { lenis = null; }
+}
+const scrollToEl = (el) => {
+  if (lenis) lenis.scrollTo(el, { duration: 1.6, easing: t => 1 - Math.pow(1 - t, 4) });
+  else el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+};
+$$('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+  const id = a.getAttribute('href');
+  const t = id.length > 1 && document.getElementById(id.slice(1));
+  if (!t) return;
+  e.preventDefault(); setMenu(false); scrollToEl(t);
+}));
+
+/* ---------- Mobile menu ---------- */
+const menu = $('#menu'), toggle = $('#menuToggle');
+function setMenu(open) {
+  menu.hidden = !open; toggle.setAttribute('aria-expanded', String(open));
+  toggle.textContent = open ? 'Cerrar' : 'Menú';
+  if (lenis) open ? lenis.stop() : lenis.start();
+}
+toggle.addEventListener('click', () => setMenu(menu.hidden));
+addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) setMenu(false); });
+
+/* ---------- Intro ---------- */
+const intro = $('#intro');
+let introDone = false;
+function ready() {
+  root.classList.add('is-ready');
+  root.classList.remove('is-locked');
+  if (lenis) lenis.start();
+}
+function buildStrokes() {
+  const d = $('#jag').getAttribute('d');
+  const g = $('.intro__strokes');
+  return d.split(/(?=M)/).map(s => s.trim()).filter(Boolean).map(s => {
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', s); p.setAttribute('pathLength', '1');
+    g.appendChild(p);
+    let len = 0, x = 0;
+    try { len = p.getTotalLength(); x = p.getBBox().x; } catch (e) {}
+    return { p, len, x };
+  });
+}
+function runIntro() {
+  if (!intro) { ready(); return; }
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  scrollTo(0, 0);
+  root.classList.add('is-locked');
+  if (lenis) lenis.stop();
+
+  const word = $('#introWord');
+  word.innerHTML = [...word.textContent].map(ch => `<span class="ch">${ch === ' ' ? '&nbsp;' : ch}</span>`).join('');
+  const letters = $$('.ch', word);
+  const fill = $('.intro__fill'), shine = $('.intro__shine'), svg = $('#introSvg');
+  const line = $('.intro__line'), tag = $('.intro__tag'), glow = $('.intro__glow'), strokesG = $('.intro__strokes');
+  const anims = [];
+  const A = (el, kf, o) => { const a = el.animate(kf, Object.assign({ fill: 'both', easing: 'cubic-bezier(.16,1,.3,1)' }, o)); anims.push(a); return a; };
+
+  if (reduce) {
+    fill.setAttribute('opacity', '1');
+    [line, tag].forEach(el => el.style.cssText = 'opacity:1;transform:none');
+    letters.forEach(l => l.style.transform = 'none');
+    setTimeout(() => {
+      intro.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, fill: 'forwards' }).onfinish = () => { intro.remove(); introDone = true; };
+      ready();
+    }, 1400);
+    return;
+  }
+
+  $('#navJag').style.opacity = '0';
+  const strokes = buildStrokes();
+  const maxLen = Math.max(...strokes.map(s => s.len));
+  // 1 · hairline + glow
+  A(line, [{ transform: 'scaleX(0)', opacity: 0 }, { transform: 'scaleX(1)', opacity: 1 }], { duration: 1400, delay: 150 });
+  A(glow, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.6)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 2200, delay: 300 });
+  // 2 · the jaguar sprints in while its outline draws
+  A(svg, [{ transform: 'translateX(-14%) skewX(-12deg)', filter: 'blur(8px)', opacity: 0 }, { transform: 'translateX(0) skewX(0)', filter: 'blur(0px)', opacity: 1 }], { duration: 1500, delay: 100, easing: 'cubic-bezier(.19,1,.22,1)' });
+  strokes.forEach(s => {
+    const big = s.len > maxLen * 0.35;
+    A(s.p, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], {
+      duration: big ? 1400 : 520,
+      delay: big ? 120 : 420 + (s.x / 1680) * 820,
+      easing: 'cubic-bezier(.65,0,.35,1)'
+    });
+  });
+  // 3 · gold fill, outline fades, shine sweep
+  A(fill, [{ opacity: 0 }, { opacity: 1 }], { duration: 900, delay: 1250, easing: 'ease-out' });
+  A(strokesG, [{ opacity: 1 }, { opacity: 0 }], { duration: 800, delay: 1650, easing: 'ease-out' });
+  A(shine, [{ transform: 'skewX(-18deg) translateX(0px)' }, { transform: 'skewX(-18deg) translateX(2600px)' }], { duration: 1300, delay: 1650, easing: 'cubic-bezier(.45,0,.2,1)' });
+  A(glow, [{ filter: 'brightness(1)' }, { filter: 'brightness(1.9)' }, { filter: 'brightness(1)' }], { duration: 1200, delay: 1700, easing: 'ease-in-out' });
+  // 4 · wordmark
+  A(word, [{ letterSpacing: '.75em' }, { letterSpacing: '.34em' }], { duration: 1900, delay: 1350 });
+  letters.forEach((l, i) => A(l, [{ transform: 'translateY(110%)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 950, delay: 1400 + i * 36 }));
+  A(tag, [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 900, delay: 2050 });
+
+  let exiting = false;
+  const exit = () => {
+    if (exiting) return; exiting = true;
+    anims.forEach(a => { try { a.finish(); } catch (e) {} });
+    const mark = $('#introMark'), target = $('#navJag');
+    const a = mark.getBoundingClientRect(), b = target.getBoundingClientRect();
+    const dx = b.left - a.left, dy = b.top - a.top, s = b.width / a.width;
+    const io = 'cubic-bezier(.77,0,.18,1)';
+    [word, tag, line, glow, $('#introSkip'), $('.intro__place')].forEach((el, i) =>
+      el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500, delay: i * 40, fill: 'forwards', easing: 'ease-in' }));
+    const fly = mark.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx}px,${dy}px) scale(${s})` }], { duration: 1150, delay: 280, easing: io, fill: 'forwards' });
+    $('.intro__half--top').animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-101%)' }], { duration: 1150, delay: 520, easing: io, fill: 'forwards' });
+    $('.intro__half--bottom').animate([{ transform: 'translateY(0)' }, { transform: 'translateY(101%)' }], { duration: 1150, delay: 520, easing: io, fill: 'forwards' });
+    setTimeout(ready, 820);
+    fly.onfinish = () => { target.style.opacity = '1'; intro.remove(); introDone = true; };
+  };
+  const auto = setTimeout(exit, 3300);
+  $('#introSkip').addEventListener('click', () => { clearTimeout(auto); exit(); });
+  addEventListener('keydown', function k(e) { if (e.key === 'Escape' && !exiting) { clearTimeout(auto); exit(); removeEventListener('keydown', k); } });
+}
+
+/* ---------- Manifesto: split into words ---------- */
+const manifesto = $('#manifesto');
+const words = [];
+(function splitWords(node) {
+  [...node.childNodes].forEach(n => {
+    if (n.nodeType === 3) {
+      const frag = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach(part => {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+        const s = document.createElement('span'); s.className = 'w'; s.textContent = part; frag.appendChild(s); words.push(s);
+      });
+      n.replaceWith(frag);
+    } else if (n.nodeType === 1) splitWords(n);
+  });
+})(manifesto);
+
+/* ---------- Layout metrics (cached, re-measured on resize) ---------- */
+const hero = $('#inicio'), heroInner = $('#heroInner');
+const manSec = $('#filosofia');
+const svcSec = $('#servicios'), svcTrack = $('#svcTrack'), svcBar = $('#svcBar'), svcNow = $('#svcNow');
+const svcCards = $$('.svc', svcTrack);
+$('#svcTotal').textContent = String(svcCards.length).padStart(2, '0');
+const stepsEl = $('#steps'), stepRail = $('#stepRail'), stepItems = $$('.step', stepsEl), stepNum = $('#stepNum');
+const ctaSec = $('#contacto'), ctaJag = $('#ctaJag');
+const nav = $('#nav'), fab = $('#fab'), progress = $('#progress');
+const navLinks = $$('.nav__links a');
+const sections = navLinks.map(a => document.getElementById(a.getAttribute('href').slice(1)));
+const mqA = $('#marqueeA'), mqB = $('#marqueeB');
+const scrollFx = !reduce;
+if (!scrollFx) root.classList.add('no-scrollfx');
+
+let vh = innerHeight, vw = innerWidth, docH = 1;
+const M = {};
+const absTop = el => el.getBoundingClientRect().top + scrollY;
+function fillMarquee(mq) {
+  const set = mq.querySelector('.marquee__set');
+  mq.querySelectorAll('.marquee__set.clone').forEach(c => c.remove());
+  const w = set.offsetWidth || 1;
+  const copies = Math.ceil((vw * 2) / w) + 1;
+  for (let i = 0; i < copies; i++) { const c = set.cloneNode(true); c.classList.add('clone'); mq.appendChild(c); }
+  return w;
+}
+function measure() {
+  vh = innerHeight; vw = innerWidth;
+  if (scrollFx) {
+    svcSec.classList.add('is-pinned');
+    svcTrack.style.transform = 'none';
+    const dist = Math.max(0, svcTrack.scrollWidth - vw);
+    M.svcDist = dist;
+    svcSec.style.height = (dist + vh) + 'px';
+  }
+  M.heroH = hero.offsetHeight;
+  M.manT = absTop(manSec); M.manH = manSec.offsetHeight;
+  M.svcT = absTop(svcSec); M.svcH = svcSec.offsetHeight;
+  M.stepsT = absTop(stepsEl); M.stepsH = stepsEl.offsetHeight;
+  M.stepTops = stepItems.map(absTop);
+  M.ctaT = absTop(ctaSec);
+  M.secTops = sections.map(s => s ? absTop(s) : 0);
+  M.mqA = fillMarquee(mqA); M.mqB = fillMarquee(mqB);
+  docH = document.documentElement.scrollHeight;
+}
+
+/* ---------- Scroll-driven frame ---------- */
+let lastY = scrollY, vel = 0, mqAx = 0, mqBx = 0, lastStep = 0, lastWordLit = -1, lastSvc = -1;
+function update(t) {
+  const y = scrollY;
+  const dy = y - lastY; lastY = y;
+  vel = lerp(vel, dy, 0.1);
+
+  progress.style.transform = `scaleX(${clamp(y / Math.max(1, docH - vh))})`;
+
+  if (root.classList.contains('is-ready')) {
+    nav.classList.toggle('is-solid', y > 40);
+    if (!menu.hidden || y < vh * 0.6 || dy < -1.5) nav.classList.remove('is-hidden');
+    else if (dy > 1.5) nav.classList.add('is-hidden');
+    fab.classList.toggle('is-away', y < vh * 0.5 || y > docH - vh * 1.6);
+  }
+
+  // active nav link
+  let active = -1;
+  M.secTops.forEach((top, i) => { if (y + vh * 0.4 >= top) active = i; });
+  navLinks.forEach((a, i) => a.classList.toggle('is-active', i === active));
+
+  if (!scrollFx) return;
+
+  // hero parallax
+  if (y < M.heroH * 1.1) {
+    const p = y / M.heroH;
+    heroInner.style.transform = `translate3d(0,${y * 0.32}px,0)`;
+    heroInner.style.opacity = String(clamp(1 - p * 1.25));
+  }
+
+  // manifesto words light up
+  {
+    const p = clamp((y - M.manT + vh * 0.35) / (M.manH - vh * 0.6));
+    const lit = p * words.length * 1.08;
+    const key = Math.round(lit * 10);
+    if (key !== lastWordLit) {
+      lastWordLit = key;
+      words.forEach((w, i) => w.style.setProperty('--o', (0.16 + 0.84 * clamp(lit - i)).toFixed(3)));
+    }
+  }
+
+  // services: vertical scroll -> horizontal track
+  {
+    const p = clamp((y - M.svcT) / Math.max(1, M.svcH - vh));
+    svcTrack.style.transform = `translate3d(${-p * M.svcDist}px,0,0)`;
+    svcBar.style.transform = `scaleX(${(p * (svcCards.length - 1) + 1) / svcCards.length})`;
+    const idx = Math.min(svcCards.length - 1, Math.round(p * (svcCards.length - 1)));
+    if (idx !== lastSvc) { lastSvc = idx; svcNow.textContent = String(idx + 1).padStart(2, '0'); }
+  }
+
+  // process rail + active step
+  {
+    const p = clamp((y + vh * 0.55 - M.stepsT) / M.stepsH);
+    stepRail.style.transform = `scaleY(${p})`;
+    let s = 0;
+    M.stepTops.forEach((top, i) => { if (y + vh * 0.55 >= top) s = i; });
+    if (s !== lastStep) {
+      stepItems[lastStep].classList.remove('is-active');
+      stepItems[s].classList.add('is-active');
+      const dir = s > lastStep ? 1 : -1;
+      lastStep = s;
+      stepNum.animate([{ transform: `translateY(${dir * 60}%)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 600, easing: 'cubic-bezier(.16,1,.3,1)' });
+      stepNum.textContent = String(s + 1).padStart(2, '0');
+    }
+  }
+
+  // marquee reacts to scroll velocity
+  {
+    const boost = clamp(Math.abs(vel) * 0.35, 0, 14);
+    mqAx -= 0.6 + boost; mqBx += 0.45 + boost * 0.7;
+    if (-mqAx >= M.mqA) mqAx += M.mqA;
+    if (mqBx >= 0) mqBx -= M.mqB;
+    const skew = clamp(-vel * 0.18, -8, 8);
+    mqA.style.transform = `translate3d(${mqAx}px,0,0) skewX(${skew}deg)`;
+    mqB.style.transform = `translate3d(${mqBx}px,0,0)`;
+  }
+
+  // CTA jaguar sprints in
+  {
+    const p = easeOut(clamp((y + vh - M.ctaT) / (vh * 1.1)));
+    ctaJag.style.transform = `translate3d(${(1 - p) * -60}vw,0,0) skewX(${(1 - p) * -14}deg)`;
+    ctaJag.style.opacity = String(0.02 + p * 0.1);
+  }
+}
+
+/* ---------- Reveal on view ---------- */
+if ('IntersectionObserver' in window) {
+  // a clip-path hides the masked headings from the observer, so their parent is watched instead
+  const owners = new Map();
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    (owners.get(e.target) || []).forEach(el => el.classList.add('in'));
+    io.unobserve(e.target);
+  }), { rootMargin: '0px 0px -8% 0px', threshold: 0.01 });
+  $$('.reveal,.reveal-mask').forEach(el => {
+    const t = el.classList.contains('reveal-mask') ? el.parentElement : el;
+    if (!owners.has(t)) owners.set(t, []);
+    owners.get(t).push(el);
+    io.observe(t);
+  });
+} else $$('.reveal,.reveal-mask').forEach(el => el.classList.add('in'));
+
+/* ---------- Pointer niceties ---------- */
+if (fine && !reduce) {
+  $$('.magnetic').forEach(b => {
+    b.addEventListener('pointermove', e => {
+      const r = b.getBoundingClientRect();
+      b.style.setProperty('--bx', ((e.clientX - r.left - r.width / 2) * 0.22).toFixed(1) + 'px');
+      b.style.setProperty('--by', ((e.clientY - r.top - r.height / 2) * 0.32).toFixed(1) + 'px');
+    });
+    b.addEventListener('pointerleave', () => { b.style.setProperty('--bx', '0px'); b.style.setProperty('--by', '0px'); });
+  });
+  $$('.svc').forEach(c => c.addEventListener('pointermove', e => {
+    const r = c.getBoundingClientRect();
+    c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  }));
+}
+
+/* ---------- Hero: black lacquer under studio light (WebGL) ---------- */
+const heroGL = (() => {
+  const cv = $('#heroGL');
+  let gl = null;
+  try { gl = cv.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' }); } catch (e) {}
+  if (!gl) { cv.classList.add('is-off'); return null; }
+  const vs = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  const fs = `precision highp float;
+uniform vec2 uR;uniform float uT;uniform vec2 uM;uniform float uS;
+float H(vec2 p){float t=uT*.11;
+ float h=.85*sin(p.x*.55+.7*sin(p.y*.42+t)+t*.55);
+ h+=.5*sin(p.y*.78+.9*sin(p.x*.31-t*.8)-t*.3);
+ h+=.13*sin(p.x*1.6+p.y*1.05+t*1.2);
+ return h;}
+float hash(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
+void main(){
+ vec2 uv=(gl_FragCoord.xy-.5*uR)/uR.y;
+ vec2 p=uv*2.5+vec2(0.,uS*1.2);
+ float e=.003;
+ float hx=(H(p+vec2(e,0.))-H(p-vec2(e,0.)))/(2.*e);
+ float hy=(H(p+vec2(0.,e))-H(p-vec2(0.,e)))/(2.*e);
+ vec3 n=normalize(vec3(-hx*.55,-hy*.55,1.));
+ vec2 q=2.*n.z*n.xy;
+ vec3 gold=vec3(.84,.63,.30);
+ vec3 warm=vec3(1.,.92,.78);
+ vec3 col=vec3(.010,.012,.014);
+ float d1=abs(q.y-.30+.04*sin(uT*.23));
+ float d2=abs(q.y+.26+.03*sin(uT*.17+1.));
+ col+=warm*smoothstep(.022,.0,d1)*.55+gold*exp(-d1*16.)*.22;
+ col+=gold*smoothstep(.03,.0,d2)*.38+gold*exp(-d2*14.)*.14;
+ float sx=fract(uT*.045)*3.4-1.7;
+ float d3=abs(q.x-sx);
+ col+=warm*smoothstep(.02,.0,d3)*.25+gold*exp(-d3*14.)*.12;
+ col+=warm*exp(-9.*length(q-uM*.45))*.16;
+ col+=gold*.045*smoothstep(-.7,.7,q.y);
+ col+=gold*pow(1.-n.z,1.6)*.5;
+ float side=smoothstep(-.95,.55,uv.x+uv.y*.35);
+ col*=mix(.22,1.,side);
+ col*=smoothstep(1.35,.25,length(uv*vec2(.8,1.1)));
+ col+=(hash(gl_FragCoord.xy+fract(uT))-.5)*.012;
+ gl_FragColor=vec4(col,1.);
+}`;
+  const sh = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  let prog;
+  try {
+    prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error('link');
+  } catch (e) { cv.classList.add('is-off'); return null; }
+  gl.useProgram(prog);
+  const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const uR = gl.getUniformLocation(prog, 'uR'), uT = gl.getUniformLocation(prog, 'uT'), uM = gl.getUniformLocation(prog, 'uM'), uS = gl.getUniformLocation(prog, 'uS');
+  const m = { x: .35, y: .1 }, mt = { x: .35, y: .1 };
+  addEventListener('pointermove', e => { mt.x = (e.clientX / innerWidth - .5) * 2; mt.y = -(e.clientY / innerHeight - .5) * 2; }, { passive: true });
+  const t0 = performance.now() - 14000;
+  function resize() {
+    const r = cv.getBoundingClientRect(), s = Math.min(devicePixelRatio || 1, 1.5) * 0.75;
+    cv.width = Math.max(1, Math.round(r.width * s)); cv.height = Math.max(1, Math.round(r.height * s));
+    gl.viewport(0, 0, cv.width, cv.height);
+  }
+  function draw(now) {
+    if (scrollY > M.heroH) return;
+    m.x = lerp(m.x, mt.x, .04); m.y = lerp(m.y, mt.y, .04);
+    gl.uniform2f(uR, cv.width, cv.height);
+    gl.uniform1f(uT, reduce ? 20 : (now - t0) / 1000);
+    gl.uniform2f(uM, m.x, m.y);
+    gl.uniform1f(uS, scrollY / Math.max(1, M.heroH));
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  return { resize, draw };
+})();
+
+/* ---------- Before / after: paint under an inspection light ---------- */
+const compare = (() => {
+  const box = $('#compare'), cv = $('#compareCanvas'), knob = $('#compareKnob');
+  const ctx = cv.getContext('2d');
+  const before = document.createElement('canvas'), after = document.createElement('canvas');
+  const bx = before.getContext('2d'), ax = after.getContext('2d');
+  let W = 1, H = 1, dpr = 1, split = 0.5, visible = false, dirty = true, hover = false, intro = false;
+  const L = { x: .66, y: .42 }, LT = { x: .66, y: .42 };
+  const r = rng(11);
+  const arcs = Array.from({ length: 1700 }, () => ({ r: Math.pow(r(), .85), a: r() * Math.PI * 2, ext: .35 + r() * .9, w: .5 + r() * .9, o: .25 + r() * .75, jx: (r() - .5) * .025, jy: (r() - .5) * .025 }));
+  const spots = Array.from({ length: 55 }, () => ({ x: r(), y: r(), r: 2 + r() * 8, o: .04 + r() * .07 }));
+  const rids = Array.from({ length: 16 }, () => ({ x: r(), y: r(), l: .06 + r() * .22, a: (r() - .5) * .9, o: .05 + r() * .1 }));
+
+  function resize() {
+    const b = box.getBoundingClientRect();
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = Math.max(1, Math.round(b.width * dpr)); H = Math.max(1, Math.round(b.height * dpr));
+    [cv, before, after].forEach(c => { c.width = W; c.height = H; });
+    render(); dirty = true;
+  }
+  function base(c) {
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#101215'); g.addColorStop(.38, '#060708'); g.addColorStop(.62, '#040505'); g.addColorStop(1, '#0b0c0e');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    // horizon reflected in the clear coat
+    const hz = c.createLinearGradient(0, H * .12, 0, H * .3);
+    hz.addColorStop(0, 'rgba(214,166,81,0)'); hz.addColorStop(.5, 'rgba(214,166,81,.06)'); hz.addColorStop(1, 'rgba(214,166,81,0)');
+    c.fillStyle = hz; c.fillRect(0, H * .12, W, H * .18);
+    // body crease
+    c.beginPath(); c.moveTo(0, H * .7); c.quadraticCurveTo(W * .5, H * .6, W, H * .68);
+    c.strokeStyle = 'rgba(239,233,221,.10)'; c.lineWidth = 1.2 * dpr; c.stroke();
+    c.beginPath(); c.moveTo(0, H * .705); c.quadraticCurveTo(W * .5, H * .605, W, H * .685);
+    c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = 3 * dpr; c.stroke();
+  }
+  function tubes(c, clean) {
+    const bars = [[.08, .9, .16], [.14, .78, .235]];
+    bars.forEach(([x0, x1, y]) => {
+      const yy = H * y, h = Math.max(2, H * .012);
+      c.save();
+      c.shadowColor = clean ? 'rgba(246,224,164,.55)' : 'rgba(246,224,164,.35)';
+      c.shadowBlur = (clean ? 14 : 38) * dpr;
+      const g = c.createLinearGradient(W * x0, 0, W * x1, 0);
+      const a = clean ? .95 : .45;
+      g.addColorStop(0, 'rgba(255,244,222,0)'); g.addColorStop(.12, `rgba(255,244,222,${a})`); g.addColorStop(.88, `rgba(255,244,222,${a})`); g.addColorStop(1, 'rgba(255,244,222,0)');
+      c.fillStyle = g;
+      c.fillRect(W * x0, yy - h / 2, W * (x1 - x0), clean ? h : h * 1.8);
+      c.restore();
+    });
+  }
+  function key(c, clean, lx, ly) {
+    const R = Math.min(W, H);
+    if (clean) {
+      const g = c.createRadialGradient(lx, ly, 0, lx, ly, R * .09);
+      g.addColorStop(0, 'rgba(255,250,238,1)'); g.addColorStop(.18, 'rgba(255,238,200,.85)'); g.addColorStop(.45, 'rgba(214,166,81,.18)'); g.addColorStop(1, 'rgba(214,166,81,0)');
+      c.fillStyle = g; c.beginPath(); c.arc(lx, ly, R * .09, 0, 7); c.fill();
+    } else {
+      const g = c.createRadialGradient(lx, ly, 0, lx, ly, R * .42);
+      g.addColorStop(0, 'rgba(255,240,210,.55)'); g.addColorStop(.12, 'rgba(230,210,170,.16)'); g.addColorStop(.5, 'rgba(200,190,170,.05)'); g.addColorStop(1, 'rgba(200,190,170,0)');
+      c.fillStyle = g; c.fillRect(0, 0, W, H);
+    }
+  }
+  function swirls(c, lx, ly) {
+    const rmax = Math.max(W, H) * .62;
+    c.save(); c.globalCompositeOperation = 'lighter'; c.lineCap = 'round';
+    for (const s of arcs) {
+      const rad = 6 * dpr + s.r * rmax;
+      const a = s.o * Math.exp(-rad / (rmax * .3)) * .55;
+      if (a < .012) continue;
+      const ext = s.ext * (40 * dpr / (rad + 40 * dpr)) + .015;
+      c.strokeStyle = `rgba(255,242,218,${a.toFixed(3)})`;
+      c.lineWidth = s.w * dpr;
+      c.beginPath(); c.arc(lx + s.jx * W, ly + s.jy * H, rad, s.a, s.a + ext); c.stroke();
+    }
+    c.restore();
+    // random deeper scratches and water spots
+    c.save(); c.lineCap = 'round';
+    rids.forEach(s => {
+      c.strokeStyle = `rgba(239,233,221,${s.o})`; c.lineWidth = .8 * dpr;
+      const x = s.x * W, y = s.y * H, l = s.l * W;
+      c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(s.a) * l, y + Math.sin(s.a) * l); c.stroke();
+    });
+    spots.forEach(s => {
+      c.strokeStyle = `rgba(220,215,205,${s.o})`; c.lineWidth = 1 * dpr;
+      c.beginPath(); c.arc(s.x * W, s.y * H, s.r * dpr, 0, 7); c.stroke();
+    });
+    c.fillStyle = 'rgba(190,185,175,.035)'; c.fillRect(0, 0, W, H);
+    c.restore();
+  }
+  function render() {
+    const lx = L.x * W, ly = L.y * H;
+    base(ax); tubes(ax, true); key(ax, true, lx, ly);
+    base(bx); tubes(bx, false); key(bx, false, lx, ly); swirls(bx, lx, ly);
+  }
+  function compose() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(after, 0, 0);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W * split, H); ctx.clip(); ctx.drawImage(before, 0, 0); ctx.restore();
+  }
+  function setSplit(v) {
+    split = clamp(v, .02, .98);
+    box.style.setProperty('--split', (split * 100).toFixed(2) + '%');
+    knob.setAttribute('aria-valuenow', String(Math.round(split * 100)));
+    dirty = true;
+  }
+  let drag = false;
+  const toX = e => { const b = box.getBoundingClientRect(); return (e.clientX - b.left) / b.width; };
+  const toY = e => { const b = box.getBoundingClientRect(); return (e.clientY - b.top) / b.height; };
+  box.addEventListener('pointerdown', e => { drag = true; intro = false; box.setPointerCapture(e.pointerId); setSplit(toX(e)); });
+  box.addEventListener('pointermove', e => {
+    if (drag) setSplit(toX(e));
+    if (e.pointerType === 'mouse') { hover = true; LT.x = clamp(toX(e), .05, .95); LT.y = clamp(toY(e), .08, .92); }
+  });
+  box.addEventListener('pointerup', () => drag = false);
+  box.addEventListener('pointercancel', () => drag = false);
+  box.addEventListener('pointerleave', () => hover = false);
+  knob.addEventListener('keydown', e => {
+    const step = e.shiftKey ? .1 : .02;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { setSplit(split - step); e.preventDefault(); }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { setSplit(split + step); e.preventDefault(); }
+    if (e.key === 'Home') { setSplit(0); e.preventDefault(); }
+    if (e.key === 'End') { setSplit(1); e.preventDefault(); }
+  });
+  let introStart = 0, lastRender = 0;
+  new IntersectionObserver(es => es.forEach(e => {
+    visible = e.isIntersecting;
+    if (visible && !introStart && !reduce) { introStart = performance.now(); intro = true; }
+  }), { threshold: .35 }).observe(box);
+  function frame(now) {
+    if (!visible) return;
+    if (intro) {
+      const p = clamp((now - introStart) / 2200);
+      setSplit(lerp(.94, .5, 1 - Math.pow(1 - p, 4)));
+      if (p >= 1) intro = false;
+    }
+    if (!hover && !reduce) { const t = now / 1000; LT.x = .62 + Math.sin(t * .35) * .16; LT.y = .44 + Math.sin(t * .5) * .1; }
+    const nx = lerp(L.x, LT.x, .08), ny = lerp(L.y, LT.y, .08);
+    const moved = Math.abs(nx - L.x) + Math.abs(ny - L.y) > .0004;
+    L.x = nx; L.y = ny;
+    if (moved && now - lastRender > 30) { render(); lastRender = now; dirty = true; }
+    if (dirty) { compose(); dirty = false; }
+  }
+  return { resize, frame, setSplit };
+})();
+
+/* ---------- Windshield: water film vs ceramic beading ---------- */
+const glass = (() => {
+  const cv = $('#glassCanvas'); const ctx = cv.getContext('2d');
+  let W = 1, H = 1, dpr = 1, visible = false, last = 0;
+  let sharp, blur, film, sprite;
+  const beads = [];
+  const mk = (w, h) => { const c = document.createElement('canvas'); c.width = Math.max(1, w); c.height = Math.max(1, h); return c; };
+  function scene() {
+    sharp = mk(W, H); const c = sharp.getContext('2d');
+    const g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#07090d'); g.addColorStop(.45, '#0d0f14'); g.addColorStop(.46, '#0a0a0b'); g.addColorStop(1, '#050506');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    // road converging to the horizon
+    c.strokeStyle = 'rgba(214,166,81,.18)'; c.lineWidth = 1.5 * dpr;
+    [[.5, .46, .1, 1], [.5, .46, .9, 1], [.5, .46, .5, 1]].forEach(([x0, y0, x1, y1], i) => {
+      c.setLineDash(i === 2 ? [14 * dpr, 18 * dpr] : []);
+      c.beginPath(); c.moveTo(x0 * W, y0 * H); c.lineTo(x1 * W, y1 * H); c.stroke();
+    });
+    c.setLineDash([]);
+    const r = rng(5);
+    for (let i = 0; i < 70; i++) {
+      const x = r() * W, y = H * (.2 + r() * .34), rad = (4 + Math.pow(r(), 2.2) * 34) * dpr;
+      const k = r();
+      const col = k < .45 ? '246,214,150' : k < .7 ? '255,246,230' : k < .88 ? '214,60,48' : '120,170,255';
+      const gg = c.createRadialGradient(x, y, 0, x, y, rad);
+      gg.addColorStop(0, `rgba(${col},${.55 + r() * .35})`); gg.addColorStop(.6, `rgba(${col},.18)`); gg.addColorStop(1, `rgba(${col},0)`);
+      c.fillStyle = gg; c.beginPath(); c.arc(x, y, rad, 0, 7); c.fill();
+    }
+    // headlights of an oncoming car
+    [[.46, .5], [.54, .5]].forEach(([x, y]) => {
+      const gg = c.createRadialGradient(x * W, y * H, 0, x * W, y * H, 60 * dpr);
+      gg.addColorStop(0, 'rgba(255,248,235,.95)'); gg.addColorStop(.15, 'rgba(255,240,210,.5)'); gg.addColorStop(1, 'rgba(255,240,210,0)');
+      c.fillStyle = gg; c.beginPath(); c.arc(x * W, y * H, 60 * dpr, 0, 7); c.fill();
+    });
+    // blurred version: downsample, then scale back up
+    const small = mk(Math.ceil(W / 14), Math.ceil(H / 14));
+    const sc = small.getContext('2d'); sc.imageSmoothingEnabled = true; sc.drawImage(sharp, 0, 0, small.width, small.height);
+    blur = mk(W, H); const bc = blur.getContext('2d'); bc.imageSmoothingEnabled = true; bc.imageSmoothingQuality = 'high';
+    bc.drawImage(small, 0, 0, W, H);
+    // light smeared across the water film: headlight streaks
+    bc.globalCompositeOperation = 'lighter';
+    [[.46, .5], [.54, .5]].forEach(([x, y]) => {
+      const gg = bc.createLinearGradient(x * W, 0, x * W, H);
+      gg.addColorStop(0, 'rgba(255,240,210,0)'); gg.addColorStop(.5, 'rgba(255,240,210,.14)'); gg.addColorStop(1, 'rgba(255,240,210,0)');
+      bc.fillStyle = gg; bc.fillRect(x * W - 10 * dpr, 0, 20 * dpr, H);
+    });
+    // water film texture
+    film = mk(W, H); const fc = film.getContext('2d');
+    const f = rng(9);
+    for (let i = 0; i < 160; i++) {
+      const x = f() * W * .55, y = f() * H, rw = (10 + f() * 60) * dpr, rh = rw * (.25 + f() * .5);
+      fc.save(); fc.translate(x, y); fc.rotate((f() - .5) * .8);
+      fc.fillStyle = `rgba(200,212,225,${.025 + f() * .05})`;
+      fc.beginPath(); fc.ellipse(0, 0, rw, rh, 0, 0, 7); fc.fill();
+      fc.strokeStyle = `rgba(255,255,255,${.04 + f() * .06})`; fc.lineWidth = 1 * dpr;
+      fc.beginPath(); fc.ellipse(0, 0, rw, rh, 0, Math.PI * 1.05, Math.PI * 1.9); fc.stroke();
+      fc.restore();
+    }
+    for (let i = 0; i < 14; i++) {
+      const x = f() * W * .5, y0 = f() * H * .6;
+      const gg = fc.createLinearGradient(0, y0, 0, y0 + H * .4);
+      gg.addColorStop(0, 'rgba(220,230,240,0)'); gg.addColorStop(.5, 'rgba(220,230,240,.08)'); gg.addColorStop(1, 'rgba(220,230,240,0)');
+      fc.fillStyle = gg; fc.fillRect(x, y0, (2 + f() * 4) * dpr, H * .4);
+    }
+    // bead sprite
+    sprite = mk(96, 96); const s = sprite.getContext('2d');
+    s.fillStyle = 'rgba(0,0,0,.45)'; s.beginPath(); s.ellipse(50, 54, 38, 38, 0, 0, 7); s.fill();
+    let gg = s.createRadialGradient(48, 44, 4, 48, 48, 40);
+    gg.addColorStop(0, 'rgba(255,255,255,.04)'); gg.addColorStop(.7, 'rgba(255,245,225,.06)'); gg.addColorStop(.9, 'rgba(0,0,0,.35)'); gg.addColorStop(1, 'rgba(0,0,0,0)');
+    s.fillStyle = gg; s.beginPath(); s.arc(48, 48, 40, 0, 7); s.fill();
+    gg = s.createRadialGradient(54, 66, 0, 54, 66, 20);
+    gg.addColorStop(0, 'rgba(255,230,180,.55)'); gg.addColorStop(1, 'rgba(255,230,180,0)');
+    s.fillStyle = gg; s.beginPath(); s.arc(54, 66, 20, 0, 7); s.fill();
+    s.fillStyle = 'rgba(255,255,255,.95)'; s.beginPath(); s.ellipse(36, 32, 7, 5, -.6, 0, 7); s.fill();
+    s.strokeStyle = 'rgba(255,255,255,.35)'; s.lineWidth = 2; s.beginPath(); s.arc(48, 48, 36, Math.PI * 1.05, Math.PI * 1.55); s.stroke();
+  }
+  function spawn(b, top) {
+    const big = Math.random() < .3;
+    b.r = (big ? 5 + Math.random() * 5 : 1.6 + Math.random() * 3.2) * dpr;
+    b.x = W * (.52 + Math.random() * .48);
+    b.y = top ? -b.r * 2 - Math.random() * H * .3 : Math.random() * H;
+    b.vy = 0; b.stick = !big; b.hold = Math.random() * 1.5; b.wob = Math.random() * 6;
+    return b;
+  }
+  function resize() {
+    const b = cv.getBoundingClientRect();
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = Math.max(1, Math.round(b.width * dpr)); H = Math.max(1, Math.round(b.height * dpr));
+    cv.width = W; cv.height = H;
+    scene();
+    beads.length = 0;
+    const n = Math.round(70 * (W * H) / (900 * 720 * dpr * dpr)) + 50;
+    for (let i = 0; i < n; i++) beads.push(spawn({}, false));
+    draw(0, 0);
+  }
+  function draw(now, dt) {
+    const mid = W * .5;
+    ctx.drawImage(sharp, 0, 0);
+    // left: untreated glass
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, mid, H); ctx.clip();
+    ctx.drawImage(blur, 0, 0);
+    const drift = (now * .006 * dpr) % H;
+    ctx.globalAlpha = .9; ctx.drawImage(film, 0, drift - H); ctx.drawImage(film, 0, drift); ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(170,185,200,.05)'; ctx.fillRect(0, 0, mid, H);
+    ctx.restore();
+    // right: ceramic, water beads and runs off
+    ctx.save(); ctx.beginPath(); ctx.rect(mid, 0, W - mid, H); ctx.clip();
+    for (const b of beads) {
+      if (b.stick) { if (Math.random() < .0008) b.stick = false; }
+      else if (b.hold > 0) b.hold -= dt;
+      else { b.vy = Math.min(b.vy + dt * 900 * dpr, 900 * dpr); b.y += b.vy * dt; b.x += Math.sin(now / 300 + b.wob) * .3 * dpr; }
+      if (b.y > H + b.r * 2) spawn(b, true);
+      const d = b.r * 2.4;
+      ctx.drawImage(sprite, b.x - d / 2, b.y - d / 2, d, d * (b.vy > 50 ? 1.15 : 1));
+    }
+    ctx.restore();
+    // divider
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, 'rgba(246,224,164,0)'); g.addColorStop(.2, 'rgba(246,224,164,.9)'); g.addColorStop(.8, 'rgba(246,224,164,.9)'); g.addColorStop(1, 'rgba(246,224,164,0)');
+    ctx.fillStyle = g; ctx.fillRect(mid - dpr * .5, 0, dpr, H);
+  }
+  new IntersectionObserver(es => es.forEach(e => visible = e.isIntersecting), { threshold: .05 }).observe(cv);
+  function frame(now) {
+    if (!visible || reduce) { last = now; return; }
+    const dt = Math.min(.05, (now - (last || now)) / 1000); last = now;
+    draw(now, dt);
+  }
+  return { resize, frame };
+})();
+
+/* ---------- Booking message builder ---------- */
+(() => {
+  const chips = $$('#chips input'), veh = $('#vehiculo'), name = $('#nombre'), link = $('#bookingLink'), prev = $('#preview');
+  const list = arr => arr.length <= 1 ? (arr[0] || '') : arr.slice(0, -1).join(', ') + ' y ' + arr[arr.length - 1];
+  function build() {
+    const svcs = chips.filter(c => c.checked).map(c => c.value);
+    const n = name.value.trim(), v = veh.value.trim();
+    let msg = 'Hola Jaguar Detailing' + (n ? `, soy ${n}` : '') + '. ';
+    msg += svcs.length ? `Me interesa ${list(svcs)}` : 'Me gustaría agendar una cita';
+    msg += v ? ` para mi ${v}.` : '.';
+    msg += ' ¿Qué disponibilidad tienen?';
+    link.href = waHref(msg);
+    prev.textContent = '“' + msg + '”';
+  }
+  [...chips, veh, name].forEach(el => el.addEventListener('input', build));
+  build();
+  const btn = $('#copyTel');
+  btn.addEventListener('click', () => {
+    const done = () => { btn.textContent = 'Copiado'; setTimeout(() => btn.textContent = 'Copiar', 1800); };
+    const fallback = () => { const s = getSelection(), rg = document.createRange(); rg.selectNodeContents($('#tel')); s.removeAllRanges(); s.addRange(rg); btn.textContent = 'Seleccionado'; setTimeout(() => btn.textContent = 'Copiar', 1800); };
+    try { navigator.clipboard.writeText('+506 7238-4351').then(done, fallback); } catch (e) { fallback(); }
+  });
+})();
+
+/* ---------- Boot ---------- */
+function resizeAll() { measure(); heroGL && heroGL.resize(); compare.resize(); glass.resize(); }
+let rT;
+addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(resizeAll, 120); });
+resizeAll();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => measure());
+addEventListener('load', () => measure());
+if ('ResizeObserver' in window) { let h = 0; new ResizeObserver(() => { const nh = document.body.scrollHeight; if (Math.abs(nh - h) > 2) { h = nh; clearTimeout(rT); rT = setTimeout(measure, 150); } }).observe(document.body); }
+
+function loop(t) {
+  if (lenis) lenis.raf(t);
+  update(t);
+  heroGL && heroGL.draw(t);
+  compare.frame(t);
+  glass.frame(t);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+runIntro();
+})();
+</script>
+<!-- /ARTIFACT:BODY -->
+</body>
+</html>
