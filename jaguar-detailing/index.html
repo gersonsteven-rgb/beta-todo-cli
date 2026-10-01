@@ -332,7 +332,10 @@ ul,ol{margin:0;padding:0;list-style:none}
 .foot__crest i{width:clamp(28px,4vw,72px);height:1px;background:currentColor;opacity:.6}
 .foot__word{font:500 clamp(3.4rem,15vw,15rem)/1 var(--f-brand);letter-spacing:.06em;margin-right:-.06em;white-space:nowrap;user-select:none}
 .foot__word--reflect{transform:scaleY(-1);margin-top:-.39em;opacity:.18;-webkit-mask-image:linear-gradient(to top,#000,transparent 58%);mask-image:linear-gradient(to top,#000,transparent 58%);pointer-events:none}
-.foot__legal{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-block:18px calc(22px + env(safe-area-inset-bottom,0px));font-size:12.5px;color:var(--smoke);border-top:1px solid var(--rule);position:relative;background:var(--ink)}
+.foot__legal{display:flex;justify-content:space-between;gap:10px 24px;flex-wrap:wrap;padding-block:18px calc(22px + env(safe-area-inset-bottom,0px));font-size:12.5px;color:var(--smoke);border-top:1px solid var(--rule);position:relative;background:var(--ink)}
+.foot__by{flex-basis:100%;text-align:center;padding-top:12px;margin-top:4px;border-top:1px solid var(--rule);text-decoration:none;color:var(--smoke);letter-spacing:.08em;transition:color .3s}
+.foot__by b{font-weight:500;color:var(--gold)}
+.foot__by:hover,.foot__by:hover b{color:var(--gold-hi)}
 
 /* Floating WhatsApp */
 .fab{position:fixed;right:clamp(14px,2.4vw,30px);bottom:calc(clamp(14px,2.4vw,30px) + env(safe-area-inset-bottom,0px));z-index:50;display:flex;align-items:center;gap:10px;height:56px;padding:0 20px 0 16px;border-radius:999px;background:rgba(6,7,8,.8);border:1px solid rgba(214,166,81,.55);color:var(--pearl);text-decoration:none;font:600 11.5px/1 var(--f-display);letter-spacing:.18em;text-transform:uppercase;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .6s var(--ease),opacity .6s,border-color .3s}
@@ -786,6 +789,7 @@ ul,ol{margin:0;padding:0;list-style:none}
   <div class="foot__legal wrap">
     <span>© 2026 Jaguar Detailing · Pro Detailing</span>
     <span>Alajuela, Costa Rica · WhatsApp 7238-4351</span>
+    <a class="foot__by" href="https://horaceroia.com/" target="_blank" rel="noopener">by <b>horaceroia.com</b></a>
   </div>
 </footer>
 
